@@ -5,6 +5,8 @@
  * efilomena@bioingenieria.edu.ar
  * Juan Manuel Reta
  * jmrera@bioingenieria.edu.ar
+ * Sebastian Mateos
+ * smateos@ingenieria.uner.edu.ar
  * Facultad de Ingeniería
  * Universidad Nacional de Entre Ríos
  * Argentina
@@ -49,6 +51,7 @@
  *	LM			Leandro Medus
  *  EF			Eduardo Filomena
  *  JMR			Juan Manuel Reta
+ *  SM			Sebastian Mateos
  */
 
 /*
@@ -57,9 +60,11 @@
  * 20160422 v0.1 initials initial version leo
  * 20160807 v0.2 modifications and improvements made by Eduardo Filomena
  * 20160808 v0.3 modifications and improvements made by Juan Manuel Reta
+ * 20180210 v0.4 modifications and improvements made by Sebastian Mateos
  */
 
 /*==================[inclusions]=============================================*/
+#include "chip.h"
 #include "switch.h"
 
 /*==================[macros and definitions]=================================*/
@@ -93,8 +98,30 @@
 #define INPUT_DIRECTION 0
 
 /*==================[internal data declaration]==============================*/
+void (*ptrTecIntFunc[8])(); /**< Pointer to the function to be called at the interruption of each key*/
+void (*ptrTecGrupIntFunc)(); /**< Pointer to the function to be called in the group interruption of the keys*/
 
 /*==================[internal functions declaration]=========================*/
+
+/** /brief Interruption function of a gpio entry. Call the indicated function for any of the keys.
+ */
+void GPIO0_IRQHandler(void);
+
+/** \brief Interruption function of a gpio entry. Call the indicated function for any of the keys.
+ */
+void GPIO1_IRQHandler(void);
+
+/**\brief Interruption function of a gpio entry. Call the indicated function for any of the keys.
+ */
+void GPIO2_IRQHandler(void);
+
+/** \brief Interruption function of a gpio entry. Call the indicated function for any of the keys.
+ */
+void GPIO3_IRQHandler(void);
+
+/** \brief Interruption function of a group of gpio entries. Call the function indicated for the assigned keys.
+ */
+void GINT0_IRQHandler(void);
 
 /*==================[internal data definition]===============================*/
 
@@ -104,7 +131,7 @@
 
 /*==================[external functions definition]==========================*/
 /** \brief Initialize method for the basic push-buttons in the EDU-CIAA board */
-uint8_t Init_Switches(void)
+uint8_t SwitchesInit(void)
 {
 	/** \details
 	 * This function initialize the four switches present in the EDU-CIAA board,
@@ -131,26 +158,104 @@ uint8_t Init_Switches(void)
 	Chip_GPIO_SetDir(LPC_GPIO_PORT, SW3_GPIO_PORT,1<<SW3_GPIO_PIN,INPUT_DIRECTION);
 	Chip_GPIO_SetDir(LPC_GPIO_PORT, SW4_GPIO_PORT,1<<SW4_GPIO_PIN,INPUT_DIRECTION);
 
-	return TRUE;
+	return true;
 }
 
-uint8_t Read_Switches(void)
+uint8_t SwitchesRead(void)
 {
-	uint8_t switchPressed = NO_KEY;
+	uint8_t mask = 0;
+	if (!Chip_GPIO_ReadPortBit(LPC_GPIO_PORT, SW1_GPIO_PORT, SW1_GPIO_PIN))
+		  mask |= SWITCH_1;
+	if (!Chip_GPIO_ReadPortBit(LPC_GPIO_PORT, SW2_GPIO_PORT, SW2_GPIO_PIN))
+		  mask |= SWITCH_2;
+	if (!Chip_GPIO_ReadPortBit(LPC_GPIO_PORT, SW3_GPIO_PORT, SW3_GPIO_PIN))
+		  mask |= SWITCH_3;
+	if (!Chip_GPIO_ReadPortBit(LPC_GPIO_PORT, SW4_GPIO_PORT, SW4_GPIO_PIN))
+		  mask |= SWITCH_4;
+	return mask;
+}
 
-	if (!Chip_GPIO_ReadPortBit(LPC_GPIO_PORT,SW1_GPIO_PORT,SW1_GPIO_PIN))
-		switchPressed = TEC1;
+void SwitchActivInt(switchgp_t gp, uint8_t tec, void *ptrIntFunc)
+{
+	ptrTecIntFunc[gp] = ptrIntFunc;
 
-	if (!Chip_GPIO_ReadPortBit(LPC_GPIO_PORT,SW2_GPIO_PORT,SW2_GPIO_PIN))
-		switchPressed = TEC2;
+	/*Configura el canal de interrupción */
+	if(tec == SWITCH_1)
+		Chip_SCU_GPIOIntPinSel(gp, SW1_GPIO_PORT, SW1_GPIO_PIN);
+	else if(tec == SWITCH_2)
+		Chip_SCU_GPIOIntPinSel(gp, SW2_GPIO_PORT, SW2_GPIO_PIN);
+	else if(tec == SWITCH_3)
+		Chip_SCU_GPIOIntPinSel(gp, SW3_GPIO_PORT, SW3_GPIO_PIN);
+	else if(tec == SWITCH_4)
+		Chip_SCU_GPIOIntPinSel(gp, SW4_GPIO_PORT, SW4_GPIO_PIN);
 
-	if (!Chip_GPIO_ReadPortBit(LPC_GPIO_PORT,SW3_GPIO_PORT,SW3_GPIO_PIN))
-		switchPressed = TEC3;
+	Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(gp)); /* Limpia el estado de la interrupcion*/
+	Chip_PININT_SetPinModeEdge(LPC_GPIO_PIN_INT, PININTCH(gp)); /* Interrupcion por flanco*/
+	Chip_PININT_EnableIntLow(LPC_GPIO_PIN_INT, PININTCH(gp)); /* Interrupcion cuando el flanco es descendente*/
 
-	if (!Chip_GPIO_ReadPortBit(LPC_GPIO_PORT,SW4_GPIO_PORT,SW4_GPIO_PIN))
-		switchPressed = TEC4;
+	NVIC_ClearPendingIRQ(32+gp); /* Limpia la interrupcion de PIN_INTX_IRQn definido en cmsis_43xx.h*/
+	NVIC_EnableIRQ(32+gp); /* Habilita la interrupcion de PIN_INTX_IRQn definido en cmsis_43xx.h*/
+}
 
-	return switchPressed;
+void SwitchesActivGroupInt(uint8_t tecs, void *ptrIntFunc)
+{
+	ptrTecGrupIntFunc = ptrIntFunc;
+	Chip_GPIOGP_SelectOrMode(LPC_GPIOGROUP, 0); /* Cualquier pulsador dispara la interrupcion*/
+	Chip_GPIOGP_SelectEdgeMode(LPC_GPIOGROUP, 0); /* Interrupcion por flanco*/
+	Chip_GPIOGP_ClearIntStatus(LPC_GPIOGROUP, 0); /* Limpia el estado de la interrupcion*/
+
+	if(tecs == SWITCH_1)
+	{
+		Chip_GPIOGP_SelectLowLevel(LPC_GPIOGROUP, 0, SW1_GPIO_PORT, 1<<SW1_GPIO_PIN);/* Interrupcion por nivel bajo*/
+		Chip_GPIOGP_EnableGroupPins(LPC_GPIOGROUP, 0, SW1_GPIO_PORT, 1<<SW1_GPIO_PIN); /* Habilita el pin para la interrupcion de grupo*/
+	}
+	if(tecs == SWITCH_2)
+	{
+		Chip_GPIOGP_SelectLowLevel(LPC_GPIOGROUP, 0, SW2_GPIO_PORT, 1<<SW2_GPIO_PIN);/* Interrupcion por nivel bajo*/
+		Chip_GPIOGP_EnableGroupPins(LPC_GPIOGROUP, 0, SW2_GPIO_PORT, 1<<SW2_GPIO_PIN); /* Habilita el pin para la interrupcion de grupo*/
+	}
+	if(tecs == SWITCH_3)
+	{
+		Chip_GPIOGP_SelectLowLevel(LPC_GPIOGROUP, 0, SW3_GPIO_PORT, 1<<SW3_GPIO_PIN);/* Interrupcion por nivel bajo*/
+		Chip_GPIOGP_EnableGroupPins(LPC_GPIOGROUP, 0, SW3_GPIO_PORT, 1<<SW3_GPIO_PIN); /* Habilita el pin para la interrupcion de grupo*/
+	}
+	if(tecs == SWITCH_4)
+	{
+		Chip_GPIOGP_SelectLowLevel(LPC_GPIOGROUP, 0, SW4_GPIO_PORT, 1<<SW4_GPIO_PIN);/* Interrupcion por nivel bajo*/
+		Chip_GPIOGP_EnableGroupPins(LPC_GPIOGROUP, 0, SW4_GPIO_PORT, 1<<SW4_GPIO_PIN); /* Habilita el pin para la interrupcion de grupo*/
+	}
+
+    NVIC_EnableIRQ(40); /* Habilita la interrupcion de GINT0_IRQn definido en cmsis_43xx.h*/
+}
+
+void GPIO0_IRQHandler(void) //32
+{
+	Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(GPIOGP0));
+	ptrTecIntFunc[0]();
+}
+
+void GPIO1_IRQHandler(void) //33
+{
+	Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(GPIOGP1));
+	ptrTecIntFunc[1]();
+}
+
+void GPIO2_IRQHandler(void) //34
+{
+	Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(GPIOGP2));
+	ptrTecIntFunc[2]();
+}
+
+void GPIO3_IRQHandler(void) //35
+{
+	Chip_PININT_ClearIntStatus(LPC_GPIO_PIN_INT, PININTCH(GPIOGP3));
+	ptrTecIntFunc[3]();
+}
+
+void GINT0_IRQHandler(void) // 40
+{
+	Chip_GPIOGP_ClearIntStatus(LPC_GPIOGROUP, 0);
+	ptrTecGrupIntFunc();
 }
 
 /** @} doxygen end group definition */

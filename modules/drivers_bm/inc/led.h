@@ -1,10 +1,12 @@
-/* Copyright 2017,
+/* Copyright 2016, 
  * Leandro D. Medus
  * lmedus@bioingenieria.edu.ar
  * Eduardo Filomena
  * efilomena@bioingenieria.edu.ar
  * Juan Manuel Reta
  * jmrera@bioingenieria.edu.ar
+ * Sebastian Mateos
+ * smateos@ingenieria.uner.edu.ar
  * Facultad de Ingeniería
  * Universidad Nacional de Entre Ríos
  * Argentina
@@ -43,7 +45,8 @@
 
 
 /*==================[inclusions]=============================================*/
-#include "stdint.h"
+#include "bool.h"
+#include <stdint.h>
 
 /*==================[macros]=================================================*/
 #define lpc4337            1
@@ -55,13 +58,12 @@
 /** \brief Definition of constants to reference the EDU-CIAA leds.
  **
  **/
-enum LED_COLOR {RGB_R_LED, RGB_G_LED, RGB_B_LED, RED_LED, YELLOW_LED, GREEN_LED};
+enum LED_COLOR {LED_RGB_R=1, LED_RGB_G=2, LED_RGB_B=4, LED_1=8, LED_2=16,  LED_3=32};
 
 
 /** \brief Definition of constants to control the EDU-CIAA leds.
  **
  **/
-enum LED_STATUS {OFF, ON};
 
 
 /*==================[external functions declaration]=========================*/
@@ -74,7 +76,7 @@ enum LED_STATUS {OFF, ON};
  ** 
  ** \return TRUE if no error
  **/
-uint8_t Init_Leds(void);
+uint8_t LedsInit(void);
 
 
 /** \brief Function to turn on a specific led 
@@ -83,7 +85,7 @@ uint8_t Init_Leds(void);
  **
  ** \return FALSE if an error occurs, in other case returns TRUE
  **/
-uint8_t Led_On(uint8_t led);
+uint8_t LedOn(uint8_t led);
 
 /** \brief Function to turn off a specific led 
  ** 
@@ -91,7 +93,7 @@ uint8_t Led_On(uint8_t led);
  **
  ** \return FALSE if an error occurs, in other case returns TRUE
  **/
-uint8_t Led_Off(uint8_t led);
+uint8_t LedOff(uint8_t led);
 
 /** \brief Function to toggle a specific led 
  ** 
@@ -99,11 +101,23 @@ uint8_t Led_Off(uint8_t led);
  **
  ** \return FALSE if an error occurs, in other case returns TRUE
  **/
-uint8_t Led_Toggle(uint8_t led);
+uint8_t LedToggle(uint8_t led);
 
-/** @} doxygen end group definition */
-/** @} doxygen end group definition */
-/** @} doxygen end group definition */
+/** \brief Function to turn off all led 
+ ** 
+ ** \param[in] No Parameter 
+ **
+ ** \return FALSE if an error occurs, in other case returns TRUE
+ **/
+uint8_t LedsOffAll(void);
+
+/** \brief Function to turn on or off leds from a mask.
+ **
+ ** \param[in] mask
+ **
+ **/
+void LedsMask(uint8_t mask);
+
 /*==================[end of file]============================================*/
 #endif /* #ifndef LED_H */
 

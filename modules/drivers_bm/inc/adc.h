@@ -1,4 +1,6 @@
-/* Copyright 2016, 
+/* Copyright 2019,
+ * Sebastian Mateos
+ * smateos@ingenieria.uner.edu.ar
  * Leandro D. Medus
  * lmedus@bioingenieria.edu.ar
  * Eduardo Filomena
@@ -43,78 +45,99 @@
 #ifndef ADC_H
 #define ADC_H
 
-/** \brief AD Converter Bare Metal driver for the peripheral in the EDU-CIAA Board.
- **
- ** This is a driver to control the peripheral Analog to Digital Converter.
- **
+/** @brief AD Converter Bare Metal driver for the peripheral in the EDU-CIAA Board.
+ *
+ * This is a driver to control the peripheral Analog to Digital Converter.
+ *
  **/
-
-/** \addtogroup EDU-CIAA_Course
- ** @{ */
-/** \addtogroup Sources_LDM Leandro D. Medus Sources
- ** @{ */
-/** \addtogroup Baremetal_App Bare Metal application source file
- ** @{ */
 
 /*
  * Initials     Name
  * ---------------------------
  *	LM			Leandro Medus
  *  EF			Eduardo Filomena
+ *  JMR			Juan Manuel Reta
+ *  SM			Sebastian Mateos
  */
 
 /*
- * modification history (new versions first)
+ * modification history
  * -----------------------------------------------------------
  * 20160610 v0.1 initials initial version leo
+ * 20160807 v0.2 modifications and improvements made by Eduardo Filomena
+ * 20160808 v0.3 modifications and improvements made by Juan Manuel Reta
+ * 20190407 v1.0 modifications and improvements made by Sebastian Mateos
  */
 
 /*==================[inclusions]=============================================*/
-#include "stdint.h"
-#include "chip.h"
-
+#include <stdint.h>
+#include "bool.h"
 /*==================[macros]=================================================*/
 
 
 /*==================[typedef]================================================*/
+/** @typedef The channels on one ADC peripheral*/
+typedef enum {
+	CH1 = 1,		/**< ADC channel 1 */
+	CH2,		/**< ADC channel 2 */
+	CH3		/**< ADC channel 3 */
+} ADC_CHANNEL_t;
 
+/** @typedef The ADC peripheral on the chip*/
+typedef enum {
+	ADC0 = 0,	/**< ADC channel 0 */
+	ADC1		/**< ADC channel 1 */
+} ADC_t;
 
 /*==================[external data declaration]==============================*/
 
 
 /*==================[external functions declaration]=========================*/
-/** \brief Initialization function to control adc 0 channel 0 in the EDU-CIAA BOARD 
- ** 
- ** \return TRUE if no error
+/** @brief Initialization function for ADC in the EDU-CIAA BOARD
+ *
+ * @param[in] periph Peripheral that will perform the conversion
+ * @param[in] adc_channel Channel of the peripheral
+ *
+ * @return TRUE if no error
  **/
-uint8_t Init_Adc(void);
+uint8_t ADCInit(ADC_t periph, ADC_CHANNEL_t adc_channel);
 
-/** \brief reads adc0 channel 0 value pooling method (blocking)
- ** \return ADC value (10 bits)
+/** @brief reads value pooling method (blocking)
+ *
+ * @param[in] periph Peripheral that will perform the conversionby pooling
+ * @param[in] adc_channel Channel of the peripheral
+ *
+ * @return ADC value (10 bits)
  **/
-uint16_t Read_Adc_Value_pooling(void);
+uint16_t ADCReadValuePooling(ADC_t periph, ADC_CHANNEL_t adc_channel);
 
-/** \brief adc0 channel 0 start of convertion
- ** 
+/** @brief start of conversion
+ *
+ * @param[in] periph Peripheral that will perform the conversion
+ * @param[in] adc_channel Channel of the peripheral
+ *
+ *
  **/
-void Start_Adc(void);
+void ADCStart(ADC_t periph, ADC_CHANNEL_t adc_channel);
 
-/** \brief reads adc0 channel 0 converted value (non blocking)
- ** \return ADC value (10 bits)
+/** @brief reads converted value (non blocking)
+ *
+ * @param[in] periph Peripheral wich perform the conversion
+ * @param[in] adc_channel Channel of the peripheral
+ *
+ * @return ADC value (10 bits)
  **/
-uint16_t Read_Adc_Value(void);
+uint16_t ADCReadValue(ADC_t periph, ADC_CHANNEL_t adc_channel);
 
-/** \brief enable adc0 channel 0 end of convertion interrupt 
- ** 
- ** \param[in] adress of adc0 ISR (Interrupt Servide Routine)
- **
+/** @brief enable end of convertion interrupt
+ *
+ * @param[in] periph Peripheral that will perform the conversion
+ * @param[in] adc_channel Channel of the peripheral
+ * @param[in] adress of ISR (Interrupt Servide Routine)
+ *
  **/
-void Enable_Adc_Irq(void *pfunc);
+void ADCActivInt(ADC_t periph, ADC_CHANNEL_t adc_channel, void *pfunc);
 
-
-/** @} doxygen end group definition */
-/** @} doxygen end group definition */
-/** @} doxygen end group definition */
 /*==================[end of file]============================================*/
 #endif /* #ifndef ADC_H */
 

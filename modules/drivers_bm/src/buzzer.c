@@ -1,8 +1,6 @@
-/* Copyright 2016, 
- * Eduardo Filomena
- * efilomena@bioingenieria.edu.ar
- * Juan Manuel Reta
- * jmrera@bioingenieria.edu.ar
+	/* Copyright 2019,
+ * Sebastian Mateos
+ * smateos@ingenieria.uner.edu.ar
  * Facultad de Ingeniería
  * Universidad Nacional de Entre Ríos
  * Argentina
@@ -37,33 +35,41 @@
  *
  */
 
-#ifndef ITOA_H
-#define ITOA_H
-/** \Función itoa: 
- **
- ** Funci�n itoa: convierte un entero a una cadena
+/** \brief Bare Metal driver for buzzer in the EDU-CIAA board.
  **
  **/
 
 /*
  * Initials     Name
  * ---------------------------
- *	EF			Eduardo Filomena
- *  JMR         Juan Manuel Reta
+ * SM		Sebastian Mateos
  */
 
 /*
  * modification history (new versions first)
  * -----------------------------------------------------------
- * 20160807  v0.1 versión inicial
- *
+ * 20190220 v0.1 SM initial version
  */
+
 /*==================[inclusions]=============================================*/
-#include "stdint.h"
+#include "chip.h"
+#include "buzzer.h"
 
 /*==================[macros and definitions]=================================*/
+/** Mapping CTOUT0 pin
+ *
+ * P4_2  en TFIL_2 como CTOUT0
+ *
+ * */
+#define CTOUT1 1
+#define CTOUT1_PORT 4
+#define CTOUT1_PIN  1
+#define CTOUT_FUNC FUNC1
+
+#define INIT_FREC 1000
 
 /*==================[internal data declaration]==============================*/
+static bool init_buzzer = false; /**<  Indicates if the buzzer is initialized*/
 
 /*==================[internal functions declaration]=========================*/
 
@@ -73,14 +79,54 @@
 
 /*==================[internal functions definition]==========================*/
 
+
 /*==================[external functions definition]==========================*/
 
-/** \Función itoa: convierte un entero a una cadena */
+/** \brief Initialization function */
+uint8_t BuzzerInit(void)
+{
+	init_buzzer = true;
 
-char* Itoa(uint32_t val, uint8_t base);
+	/** Configuration of the SCT module a INIT_FREC*/
+	Chip_SCTPWM_Init(LPC_SCT);
+	Chip_SCTPWM_SetRate(LPC_SCT, INIT_FREC);
 
-/** @} doxygen end group definition */
-/** @} doxygen end group definition */
-/** @} doxygen end group definition */
+	/** Mapping of buzzer pin*/
+	Chip_SCU_PinMux(CTOUT1_PORT , CTOUT1_PIN , SCU_MODE_INACT , CTOUT_FUNC);
+	Chip_SCTPWM_SetOutPin(LPC_SCT, CTOUT1+1 , CTOUT1);
+
+	/** Set duty cycle 50%*/
+	Chip_SCTPWM_SetDutyCycle(LPC_SCT, CTOUT1+1, (Chip_SCTPWM_GetTicksPerCycle(LPC_SCT)/2));
+
+	return init_buzzer;
+}
+
+/** \brief Function to turn on buzzer */
+void BuzzerOn(void)
+{
+	if(!init_buzzer)
+		BuzzerInit();
+
+	Chip_SCTPWM_Start(LPC_SCT);
+}
+
+/** \brief Function to turn off buzzer */
+void BuzzerOff(void)
+{
+	if(!init_buzzer)
+		BuzzerInit();
+	
+	Chip_SCTPWM_Stop(LPC_SCT);
+}
+
+/** \brief Function to turn off buzzer */
+void BuzzerSetFrec(uint16_t frec)
+{
+	if(!init_buzzer)
+		BuzzerInit();
+	Chip_SCTPWM_SetRate(LPC_SCT, frec);
+	Chip_SCTPWM_Start(LPC_SCT);
+	Chip_SCTPWM_SetDutyCycle(LPC_SCT, CTOUT1+1, (Chip_SCTPWM_GetTicksPerCycle(LPC_SCT)/2));
+}
+
 /*==================[end of file]============================================*/
-#endif /* #ifndef ITOA_H */

@@ -1,10 +1,12 @@
-/* Copyright 2016, 
+	/* Copyright 2016, 
  * Leandro D. Medus
  * lmedus@bioingenieria.edu.ar
  * Eduardo Filomena
  * efilomena@bioingenieria.edu.ar
  * Juan Manuel Reta
  * jmrera@bioingenieria.edu.ar
+ * Sebastian Mateos
+ * smateos@ingenieria.uner.edu.ar
  * Facultad de Ingeniería
  * Universidad Nacional de Entre Ríos
  * Argentina
@@ -49,6 +51,7 @@
  *	LM			Leandro Medus
  * EF		Eduardo Filomena
  * JMR		Juan Manuel Reta
+ * SM		Sebastian Mateos
  */
 
 /*
@@ -57,12 +60,12 @@
  * 20160422 v0.1 initials initial version Leando Medus
  * 20160807 v0.2 modifications and improvements made by Eduardo Filomena
  * 20160808 v0.3 modifications and improvements made by Juan Manuel Reta
+ * 20180210 v0.4 modifications and improvements made by Sebastian Mateos
  */
 
 /*==================[inclusions]=============================================*/
 #include "led.h"
 #include "chip.h"
-
 
 /*==================[macros and definitions]=================================*/
 /** Mapping RGB pins
@@ -114,7 +117,6 @@
 #define OUTPUT_DIRECTION   1
 #define INPUT_DIRECTION    0
 
-
 /*==================[internal data declaration]==============================*/
 
 /*==================[internal functions declaration]=========================*/
@@ -129,7 +131,7 @@
 /*==================[external functions definition]==========================*/
 
 /** \brief Initialization function to control leds in the EDU-CIAA BOARD */
-uint8_t Init_Leds(void)
+uint8_t LedsInit(void)
 {
 	/** \details This method calls LPCOpen functions to initialize four leds
 	 * in the EDU-CIAA board. This method has to be invoked first.
@@ -164,43 +166,43 @@ uint8_t Init_Leds(void)
 	Chip_GPIO_ClearValue(LPC_GPIO_PORT, LED2_GPIO_PORT,1<<LED2_GPIO_PIN);
 	Chip_GPIO_ClearValue(LPC_GPIO_PORT, LED3_GPIO_PORT,1<<LED3_GPIO_PIN);
 
-	return TRUE;
+	return true;
 }
 
 /** \brief Function to turn on a specific led */
-uint8_t Led_On(uint8_t led)
+uint8_t LedOn(uint8_t led)
 {
 	/** \details Function to turn on a specific led at the EDU-CIAA board.
 	 * 	\params uint8_t led: this word represent a specific led based on the LED_COLOR enumeration.
 	 * */
 	uint8_t result = FALSE;
 
-	if (led == RED_LED)
+	if (led & LED_1)
 	{
 		Chip_GPIO_SetPinOutHigh(LPC_GPIO_PORT,LED1_GPIO_PORT,LED1_GPIO_PIN);
 		result = TRUE;
 	}
-	if (led == YELLOW_LED)
+	if (led & LED_2)
 	{
 		Chip_GPIO_SetPinOutHigh(LPC_GPIO_PORT,LED2_GPIO_PORT,LED2_GPIO_PIN);
 		result = TRUE;
 	}
-	if (led == GREEN_LED)
+	if (led & LED_3)
 	{
 		Chip_GPIO_SetPinOutHigh(LPC_GPIO_PORT,LED3_GPIO_PORT,LED3_GPIO_PIN);
 		result = TRUE;
 	}
-    if (led == RGB_R_LED)
+    if (led & LED_RGB_R)
 	{
 		Chip_GPIO_SetPinOutHigh(LPC_GPIO_PORT,LED_RGB_R_GPIO_PORT,LED_RGB_R_GPIO_PIN);
 		result = TRUE;
 	}
-	if (led == RGB_G_LED)
+	if (led & LED_RGB_G)
 	{
 		Chip_GPIO_SetPinOutHigh(LPC_GPIO_PORT,LED_RGB_G_GPIO_PORT,LED_RGB_G_GPIO_PIN);
 		result = TRUE;
 	}
-	if (led == RGB_B_LED)
+	if (led & LED_RGB_B)
 	{
 		Chip_GPIO_SetPinOutHigh(LPC_GPIO_PORT,LED_RGB_B_GPIO_PORT,LED_RGB_B_GPIO_PIN);
 		result = TRUE;
@@ -209,39 +211,39 @@ uint8_t Led_On(uint8_t led)
 }
 
 /** \brief Function to turn off a specific led */
-uint8_t Led_Off(uint8_t led)
+uint8_t LedOff(uint8_t led)
 {
 	/** \details Function to turn off a specific led at the EDU-CIAA board.
 		 * 	\params uint8_t led: this word represent a specific led based on the LED_COLOR enumeration.
 		 * */
 	uint8_t result = FALSE;
 
-	if (led == RED_LED)
+	if (led & LED_1)
 	{
 		Chip_GPIO_SetPinOutLow(LPC_GPIO_PORT,LED1_GPIO_PORT,LED1_GPIO_PIN);
 		result = TRUE;
 	}
-	if (led == YELLOW_LED)
+	if (led & LED_2)
 	{
 		Chip_GPIO_SetPinOutLow(LPC_GPIO_PORT,LED2_GPIO_PORT,LED2_GPIO_PIN);
 		result = TRUE;
 	}
-	if (led == GREEN_LED)
+	if (led & LED_3)
 	{
 		Chip_GPIO_SetPinOutLow(LPC_GPIO_PORT,LED3_GPIO_PORT,LED3_GPIO_PIN);
 		result = TRUE;
 	}
-	if (led == RGB_R_LED)
+	if (led & LED_RGB_R)
 	{
 		Chip_GPIO_SetPinOutLow(LPC_GPIO_PORT,LED_RGB_R_GPIO_PORT,LED_RGB_R_GPIO_PIN);
 		result = TRUE;
 	}
-	if (led == RGB_G_LED)
+	if (led & LED_RGB_G)
 	{
 		Chip_GPIO_SetPinOutLow(LPC_GPIO_PORT,LED_RGB_G_GPIO_PORT,LED_RGB_G_GPIO_PIN);
 		result = TRUE;
 	}
-	if (led == RGB_B_LED)
+	if (led & LED_RGB_B)
 	{
 		Chip_GPIO_SetPinOutLow(LPC_GPIO_PORT,LED_RGB_B_GPIO_PORT,LED_RGB_B_GPIO_PIN);
 		result = TRUE;
@@ -249,49 +251,77 @@ uint8_t Led_Off(uint8_t led)
 	return result;
 }
 
-/** \brief Function to turn off a specific led */
-uint8_t Led_Toggle(uint8_t led)
+/** \brief Function to toggle led */
+uint8_t LedToggle(uint8_t led)
 {
-	/** \details Function to toogle a specific led at the EDU-CIAA board.
-	 * 	\params uint8_t led: this word represent a specific led based on the LED_COLOR enumeration.
-	 * */
-uint8_t result = FALSE;
+	/** \details Function to toggle led at the EDU-CIAA board.
+		 * 	\params
+		 * */
+	uint8_t result = FALSE;
 
-	if (led == RED_LED)
+	if (led & LED_1)
 	{
-		Chip_GPIO_SetPinToggle(LPC_GPIO_PORT,LED1_GPIO_PORT,LED1_GPIO_PIN);
+		Chip_GPIO_SetPinToggle(LPC_GPIO_PORT, LED1_GPIO_PORT, LED1_GPIO_PIN);
 		result = TRUE;
 	}
-	if (led == YELLOW_LED)
+	if (led & LED_2)
 	{
-		Chip_GPIO_SetPinToggle(LPC_GPIO_PORT,LED2_GPIO_PORT,LED2_GPIO_PIN);
+		Chip_GPIO_SetPinToggle(LPC_GPIO_PORT, LED2_GPIO_PORT, LED2_GPIO_PIN);
 		result = TRUE;
 	}
-	if (led == GREEN_LED)
+	if (led & LED_3)
 	{
-		Chip_GPIO_SetPinToggle(LPC_GPIO_PORT,LED3_GPIO_PORT,LED3_GPIO_PIN);
+		Chip_GPIO_SetPinToggle(LPC_GPIO_PORT, LED3_GPIO_PORT, LED3_GPIO_PIN);
 		result = TRUE;
 	}
-	if (led == RGB_R_LED)
+	if (led & LED_RGB_R)
 	{
-		Chip_GPIO_SetPinToggle(LPC_GPIO_PORT,LED_RGB_R_GPIO_PORT,LED_RGB_R_GPIO_PIN);
+		Chip_GPIO_SetPinToggle(LPC_GPIO_PORT, LED_RGB_R_GPIO_PORT, LED_RGB_R_GPIO_PIN);
 		result = TRUE;
 	}
-	if (led == RGB_G_LED)
+	if (led & LED_RGB_G)
 	{
-		Chip_GPIO_SetPinToggle(LPC_GPIO_PORT,LED_RGB_G_GPIO_PORT,LED_RGB_G_GPIO_PIN);
+		Chip_GPIO_SetPinToggle(LPC_GPIO_PORT, LED_RGB_G_GPIO_PORT, LED_RGB_G_GPIO_PIN);
 		result = TRUE;
 	}
-	if (led == RGB_B_LED)
+	if (led & LED_RGB_B)
 	{
-		Chip_GPIO_SetPinToggle(LPC_GPIO_PORT,LED_RGB_B_GPIO_PORT,LED_RGB_B_GPIO_PIN);
+		Chip_GPIO_SetPinToggle(LPC_GPIO_PORT, LED_RGB_B_GPIO_PORT, LED_RGB_B_GPIO_PIN);
 		result = TRUE;
 	}
 	return result;
-	
 }
 
-/** @} doxygen end group definition */
-/** @} doxygen end group definition */
-/** @} doxygen end group definition */
+/** \brief Function to turn off all led */
+/* Function to turn off all leds, added by Gassmann Dustin */
+uint8_t LedsOffAll(void)
+{
+	/** \details Function to turn off all led at the EDU-CIAA board.
+		 * 	\params
+		 * */
+	uint8_t result;
+
+	Chip_GPIO_SetPinOutLow(LPC_GPIO_PORT,LED1_GPIO_PORT,LED1_GPIO_PIN);
+	Chip_GPIO_SetPinOutLow(LPC_GPIO_PORT,LED2_GPIO_PORT,LED2_GPIO_PIN);
+	Chip_GPIO_SetPinOutLow(LPC_GPIO_PORT,LED3_GPIO_PORT,LED3_GPIO_PIN);
+	Chip_GPIO_SetPinOutLow(LPC_GPIO_PORT,LED_RGB_R_GPIO_PORT,LED_RGB_R_GPIO_PIN);
+	Chip_GPIO_SetPinOutLow(LPC_GPIO_PORT,LED_RGB_G_GPIO_PORT,LED_RGB_G_GPIO_PIN);
+	Chip_GPIO_SetPinOutLow(LPC_GPIO_PORT,LED_RGB_B_GPIO_PORT,LED_RGB_B_GPIO_PIN);
+	
+	return result = TRUE;
+}
+
+/** \brief Function to turn on or off leds from a mask
+ */
+void LedsMask(uint8_t mask)
+{
+	/** \details Function to turn on or off leds from a mask.
+		 * 	\params uint8_t mask: a mask where the first bit represents LED 1, the second bit LED 2 and so on
+		 */
+	Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED1_GPIO_PORT, LED1_GPIO_PIN, (mask & (1<<0))>>0);
+	Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED2_GPIO_PORT, LED2_GPIO_PIN, (mask & (1<<1))>>1);
+	Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED3_GPIO_PORT, LED3_GPIO_PIN, (mask & (1<<2))>>2);
+	Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED_RGB_B_GPIO_PORT, LED_RGB_B_GPIO_PIN, (mask & (1<<3))>>3);
+}
+
 /*==================[end of file]============================================*/

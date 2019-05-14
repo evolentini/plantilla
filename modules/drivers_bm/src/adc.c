@@ -1,4 +1,6 @@
-/* Copyright 2016, 
+/* Copyright 2019,
+ * Sebastian Mateos
+ * smateos@ingenieria.uner.edu.ar
  * Leandro D. Medus
  * lmedus@bioingenieria.edu.ar
  * Eduardo Filomena
@@ -48,24 +50,33 @@
  * ---------------------------
  *	LM			Leandro Medus
  *  EF			Eduardo Filomena
- *  JMR			JuanManuel Reta
+ *  JMR			Juan Manuel Reta
+ *  SM			Sebastian Mateos
  */
 
 /*
- * modification history (new versions first)
+ * modification history
  * -----------------------------------------------------------
  * 20160422 v0.1 initials initial version leo
  * 20160807 v0.2 modifications and improvements made by Eduardo Filomena
  * 20160808 v0.3 modifications and improvements made by Juan Manuel Reta
+ * 20190407 v1.0 modifications and improvements made by Sebastian Mateos
  */
+
 
 /*==================[inclusions]=============================================*/
 #include "adc.h"
+#include "chip.h"
+
 
 /*==================[macros and definitions]=================================*/
 
 /*==================[internal data declaration]==============================*/
-void (*pIsrADC0)();
+void (*pIsrADC0[2])();
+void (*pIsrADC1[2])();
+
+uint8_t isrADC0 = 0;
+uint8_t isrADC1 = 0;
 /*==================[internal functions declaration]=========================*/
 
 /*==================[internal data definition]===============================*/
@@ -73,13 +84,27 @@ void (*pIsrADC0)();
 /*==================[external data definition]===============================*/
 
 /*==================[internal functions definition]==========================*/
- void ISR_ADC0(){
-
-	pIsrADC0();
+void ISR_ADC0()
+{
+	if(isrADC0 & 1<<CH1)
+		pIsrADC0[0]();
+	if(isrADC0 & 1<<CH2)
+		pIsrADC0[1]();
+	if(isrADC0 & 1<<CH3)
+		pIsrADC0[2]();
+}
+void ISR_ADC1()
+{
+	if(isrADC1 & 1<<CH1)
+		pIsrADC1[0]();
+	if(isrADC1 & 1<<CH2)
+		pIsrADC1[1]();
+	if(isrADC1 & 1<<CH3)
+		pIsrADC1[2]();
 }
 /*==================[external functions definition]==========================*/
 /** \brief ADC Initialization method  */
-uint8_t Init_Adc(void)
+uint8_t ADCInit(ADC_t periph, ADC_CHANNEL_t adc_channel)
 {
 
 	/** \details
@@ -95,16 +120,24 @@ uint8_t Init_Adc(void)
 	configADC.adcRate=1000;		/** max 409 KHz*/
 	configADC.burstMode=DISABLE;
 	configADC.bitsAccuracy=ADC_10BITS;
-
-	Chip_ADC_Init(LPC_ADC0,&configADC);
-	Chip_ADC_EnableChannel(LPC_ADC0,ADC_CH1,ENABLE);
-	Chip_ADC_SetSampleRate(LPC_ADC0, &configADC,ADC_MAX_SAMPLE_RATE);
-
+	switch(periph)
+	{
+	case ADC0:
+		Chip_ADC_Init(LPC_ADC0,&configADC);
+		Chip_ADC_EnableChannel(LPC_ADC0,adc_channel,ENABLE);
+		Chip_ADC_SetSampleRate(LPC_ADC0, &configADC,ADC_MAX_SAMPLE_RATE);
+		break;
+	case ADC1:
+		Chip_ADC_Init(LPC_ADC1,&configADC);
+		Chip_ADC_EnableChannel(LPC_ADC1,ADC_CH1,ENABLE);
+		Chip_ADC_SetSampleRate(LPC_ADC1, &configADC,ADC_MAX_SAMPLE_RATE);
+		break;
+	}
 	return TRUE;
 }
 
 /** \brief ADC Ch1 Acquisition method by pooling */
-uint16_t Read_Adc_Value_Pooling(void)
+uint16_t ADCReadValuePooling(ADC_t periph, ADC_CHANNEL_t adc_channel)
 {
 	/** \details
 	 * This function initialize the DAC peripheral in the EDU-CIAA board,
@@ -115,43 +148,100 @@ uint16_t Read_Adc_Value_Pooling(void)
 	 * \return uint8_t: TBD (to support errors in the init function)
 	 * */
 	uint16_t valueRead = 0 ;
-
-	/** Start Acquisition */
-	Chip_ADC_SetStartMode(LPC_ADC0, ADC_START_NOW, ADC_TRIGGERMODE_RISING);
-	/** The pooling magic! */
-	while (Chip_ADC_ReadStatus(LPC_ADC0, ADC_CH1, ADC_DR_DONE_STAT) != SET)
-	{
-		/** pooooliiinnggg maaagggicccc plif plif pluf pluf */
-	}
-	/** Conversion complete, and value reading */
-	Chip_ADC_ReadValue(LPC_ADC0,ADC_CH1, &valueRead);
+	switch(periph)
+		{
+		case ADC0:
+			/** Start Acquisition */
+			Chip_ADC_SetStartMode(LPC_ADC0, ADC_START_NOW, ADC_TRIGGERMODE_RISING);
+			/** The pooling magic! */
+			while (Chip_ADC_ReadStatus(LPC_ADC0, adc_channel, ADC_DR_DONE_STAT) != SET)
+			{
+				/** pooooliiinnggg maaagggicccc plif plif pluf pluf */
+			}
+			/** Conversion complete, and value reading */
+			Chip_ADC_ReadValue(LPC_ADC0,adc_channel, &valueRead);
+			break;
+		case ADC1:
+			/** Start Acquisition */
+			Chip_ADC_SetStartMode(LPC_ADC1, ADC_START_NOW, ADC_TRIGGERMODE_RISING);
+			/** The pooling magic! */
+			while (Chip_ADC_ReadStatus(LPC_ADC1, adc_channel, ADC_DR_DONE_STAT) != SET)
+			{
+				/** pooooliiinnggg maaagggicccc plif plif pluf pluf */
+			}
+			/** Conversion complete, and value reading */
+			Chip_ADC_ReadValue(LPC_ADC1,adc_channel, &valueRead);
+			break;
+		}
 
 	return valueRead;
 }
 
 /** Start Acquisition */
-void Start_Adc(void){
-  Chip_ADC_SetStartMode(LPC_ADC0, ADC_START_NOW, ADC_TRIGGERMODE_RISING);
-	
+void ADCStart(ADC_t periph, ADC_CHANNEL_t adc_channel)
+{
+	switch(periph)
+	{
+		case ADC0:
+			Chip_ADC_SetStartMode(LPC_ADC0, ADC_START_NOW, ADC_TRIGGERMODE_RISING);
+			break;
+		case ADC1:
+			Chip_ADC_SetStartMode(LPC_ADC1, ADC_START_NOW, ADC_TRIGGERMODE_RISING);
+			break;
+	}
 }
-uint16_t Read_Adc_Value(void){
-  uint16_t data;
-  Chip_ADC_ReadValue(LPC_ADC0,ADC_CH1, &data);
-  return data;
 
-  }
+uint16_t ADCReadValue(ADC_t periph, ADC_CHANNEL_t adc_channel)
+{
+	uint16_t data;
+	switch(periph)
+	{
+		case ADC0:
+			  Chip_ADC_ReadValue(LPC_ADC0,adc_channel, &data);
+			break;
+		case ADC1:
+			  Chip_ADC_ReadValue(LPC_ADC1,adc_channel, &data);
+			break;
+	}
+	return data;
+}
   
-void Enable_Adc_Irq(void *pfunc){
-	pIsrADC0=pfunc;
+void ADCActivInt(ADC_t periph, ADC_CHANNEL_t adc_channel, void *pfunc)
+{
 	/*Enable interrupt for ADC channel */
+	switch(periph)
+	{
+		case ADC0:
+			Chip_ADC_Int_SetChannelCmd(LPC_ADC0, adc_channel, ENABLE);
+			NVIC_EnableIRQ(ADC0_IRQn);
+			pIsrADC0[adc_channel]=pfunc;
+			isrADC0 |= 1<<adc_channel;
+			break;
+		case ADC1:
+			Chip_ADC_Int_SetChannelCmd(LPC_ADC0, adc_channel, ENABLE);
+			NVIC_EnableIRQ(ADC1_IRQn);
+			pIsrADC1[adc_channel]=pfunc;
+			isrADC1 |= 1<<adc_channel;
+			break;
+		}
+}
 
-	Chip_ADC_Int_SetChannelCmd(LPC_ADC0,ADC_CH1,ENABLE);
-	NVIC_EnableIRQ(ADC0_IRQn);
-  }
+void ADCDeactivInt(ADC_t periph, ADC_CHANNEL_t adc_channel)
+{
+	/*Disable interrupt for ADC channel */
+	switch(periph)
+	{
+		case ADC0:
+			Chip_ADC_Int_SetChannelCmd(LPC_ADC0,adc_channel,DISABLE);
+			NVIC_DisableIRQ(ADC0_IRQn);
+			isrADC0 &= ~(1<<adc_channel);
+			break;
+		case ADC1:
+			Chip_ADC_Int_SetChannelCmd(LPC_ADC0,adc_channel,DISABLE);
+			NVIC_DisableIRQ(ADC1_IRQn);
+			isrADC1 &= ~(1<<adc_channel);
+			break;
+		}
+}
 
-
-
-/** @} doxygen end group definition */
-/** @} doxygen end group definition */
-/** @} doxygen end group definition */
 /*==================[end of file]============================================*/
