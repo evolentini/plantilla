@@ -1,10 +1,6 @@
-/* Copyright 2016, 
- * Leandro D. Medus
- * lmedus@bioingenieria.edu.ar
- * Eduardo Filomena
- * efilomena@bioingenieria.edu.ar
- * Juan Manuel Reta
- * jmrera@bioingenieria.edu.ar
+/* Copyright 2018,
+ * Sebastian Mateos
+ * smateos@ingenieria.uner.edu.ar
  * Facultad de Ingeniería
  * Universidad Nacional de Entre Ríos
  * Argentina
@@ -39,196 +35,114 @@
  *
  */
 
-/** \brief Bare Metal driver for uart in the EDU-CIAA board.
- **
- **/
-
-/*
- * Initials     Name
- * ---------------------------
- *	LM			Leandro Medus
- *  EF			Eduardo Filomena
- *  JMR			Juan Manuel Reta
- */
-
-/*
- * modification history (new versions first)
- * -----------------------------------------------------------
- * 20160422 v0.1 initials initial version leo
- * 20160807 v0.2 modifications and improvements made by Eduardo Filomena
- * 20160808 v0.3 modifications and improvements made by Juan Manuel Reta
- */
-
 /*==================[inclusions]=============================================*/
 #include "uart.h"
+#include "chip.h"
+
 
 /*==================[macros and definitions]=================================*/
-
-#define DELAY_CHARACTER 500000
-
-/* UART0 (RS485/Profibus) */
-
-#define RS485_TXD_MUX_GROUP   9
-#define RS485_RXD_MUX_GROUP   9
-
-#define RS485_TXD_MUX_PIN   5
-#define RS485_RXD_MUX_PIN   6
-
-
-/* UART2 (USB-UART) */
-#define UART_USB_TXD_MUX_GROUP   7
-#define UART_USB_RXD_MUX_GROUP   7
-
-#define UART_USB_TXD_MUX_PIN   1
-#define UART_USB_RXD_MUX_PIN   2
-
-
-/* UART3 (RS232) */
-
-#define RS232_TXD_MUX_GROUP   2
-#define RS232_RXD_MUX_GROUP   2
-
-#define RS232_TXD_MUX_PIN   3
-#define RS232_RXD_MUX_PIN   4
-
-
+/*Direction Pin*/
+#define DIR_RS485_MUX_GROUP 	6
+#define DIR_RS485_MUX_PIN 	2
 
 /*==================[internal data declaration]==============================*/
 
-/*==================[internal functions declaration]=========================*/
-
 /*==================[internal data definition]===============================*/
+static bool initRing[3] = {false, false, false}; /**< Indica si se ha llamado a la funcion de inicializacion del ring buffer*/
+static bool initInt[3] = {false, false, false}; /**< Indica si se ha llamado a la funcion de activacion de interrupciones*/
+
+static unsigned char rxBuff[3][BUFFSize]; /**< Vector para contener los datos asociados el buffer de entrada */
+static unsigned char txBuff[3][BUFFSize]; /**< Vector para contener los datos asociados el buffer de salida */
+
+static RINGBUFF_T txRing[3]; /**< Estructura asociado al buffer circular de transmisión. */
+static RINGBUFF_T rxRing[3]; /**< Estructura asociada al buffer circular de recepción.  */
+
+void (*ptrUartFunc[3])(); /**< Puntero a la funcion que se va a llamar en la interrupcion de la uart*/
+
+const configUart_t uarts[] =
+{
+	{0x400C1000, 0x07, 0x02, 0x07, 0x01, FUNC6, BAUDRATE_USB,  UART_LCR_WLEN8 | UART_LCR_SBS_1BIT | UART_LCR_PARITY_DIS,  UART_FCR_FIFO_EN | UART_FCR_TRG_LEV0}, /*!< Configuracion LPC_USART2 (UART_USB)*/
+	{0x400C2000, 0x02, 0x04, 0x02, 0x03, FUNC2, BAUDRATE_RS232, UART_LCR_WLEN8 | UART_LCR_SBS_1BIT | UART_LCR_PARITY_DIS, UART_FCR_FIFO_EN | UART_FCR_TRG_LEV3}, /*!< Configuracion LPC_USART3 (UART_RS232)*/
+	{0x40081000, 0x09, 0x06, 0x09, 0x05, FUNC7, BAUDRATE_RS485, UART_LCR_WLEN8 | UART_LCR_SBS_1BIT | UART_LCR_PARITY_DIS, UART_FCR_FIFO_EN | UART_FCR_TRG_LEV0} /*!< Configuracion LPC_USART0 (UART_RS485)*/
+
+};
+
+/*==================[internal functions declaration]=========================*/
 
 /*==================[external data definition]===============================*/
 
+/*==================[external functions definition]==========================*/
+/** @fn void UART2_IRQHandler (void)
+ *  @brief Se llama cada vez que la UART_USB recibe un dato.
+ *  LLama a la funcion indicada en la inicializacion o a la funcion que carga el ring buffer si el mismo esta configurado.
+ */
+void UART2_IRQHandler (void);
+
+/** @fn void UART2_IRQHandler (void)
+ *  @brief Se llama cada vez que la UART_RS232 recibe un dato.
+ *  LLama a la funcion indicada en la inicializacion o a la funcion que carga el ring buffer si el mismo esta configurado.
+ */
+void UART3_IRQHandler (void);
+
+/** @fn void UART2_IRQHandler (void)
+ *  @brief Se llama cada vez que la UART_RS485 recibe un dato.
+ *  LLama a la funcion indicada en la inicializacion o a la funcion que carga el ring buffer si el mismo esta configurado.
+ */
+void UART0_IRQHandler (void);
+
 /*==================[internal functions definition]==========================*/
 
-/*==================[external functions definition]==========================*/
-/** \brief ADC Initialization method  */
-uint32_t Init_Uart_Ftdi(void)
+void UARTInit(uart_t u)
 {
-
-	/** \details
-	 * This function initialize the ADC peripheral in the EDU-CIAA board,
-	 * with the correct parameters with LPCOpen library. It uses CH1
-	 *
-	 * \param none
-	 *
-	 * \return uint8_t: TBD (to support errors in the init function)
-	 * */
-
-
-	/* UART2 (USB-UART) */
-	Chip_UART_Init(USB_UART);
-	Chip_UART_SetBaud(USB_UART, 115200);
-
-	Chip_UART_SetupFIFOS(USB_UART, UART_FCR_FIFO_EN | UART_FCR_TRG_LEV0);
-
-	Chip_UART_TXEnable(USB_UART);
-
-	Chip_SCU_PinMux(UART_USB_TXD_MUX_GROUP, UART_USB_TXD_MUX_PIN, MD_PDN, FUNC6);              /* P7_1: UART2_TXD */
-	Chip_SCU_PinMux(UART_USB_RXD_MUX_GROUP, UART_USB_RXD_MUX_PIN, MD_PLN|MD_EZI|MD_ZI, FUNC6); /* P7_2: UART2_RXD */
-
-	/* UART3 (RS232) */
-	Chip_UART_Init(RS232_UART);
-	Chip_UART_SetBaud(RS232_UART, 115200);
-
-	Chip_UART_SetupFIFOS(RS232_UART, UART_FCR_FIFO_EN | UART_FCR_TRG_LEV0);
-
-	Chip_UART_TXEnable(LPC_USART3);
-
-	Chip_SCU_PinMux(RS232_TXD_MUX_GROUP, RS232_TXD_MUX_PIN, MD_PDN, FUNC2);              /* P2_3: UART3_TXD */
-	Chip_SCU_PinMux(RS232_RXD_MUX_GROUP, RS232_RXD_MUX_PIN, MD_PLN|MD_EZI|MD_ZI, FUNC2); /* P2_4: UART3_RXD */
-
-	return TRUE;
+    Chip_SCU_PinMux(uarts[u].txHwPort, uarts[u].txHwPin, MD_PDN, uarts[u].func);
+    Chip_SCU_PinMux(uarts[u].rxHwPort, uarts[u].rxHwPin, MD_PLN|MD_EZI|MD_ZI, uarts[u].func);
+	Chip_UART_Init((LPC_USART_T *)uarts[u].uart);
+    Chip_UART_ConfigData((LPC_USART_T *)uarts[u].uart, uarts[u].configOpt);
+    Chip_UART_SetBaud((LPC_USART_T *)uarts[u].uart, uarts[u].baudrate);
+    Chip_UART_SetupFIFOS((LPC_USART_T *)uarts[u].uart, uarts[u].configFifo);
+    Chip_UART_TXEnable((LPC_USART_T *)uarts[u].uart);
+    if(u == UART_RS485)
+    {
+    	Chip_UART_SetRS485Flags(LPC_USART0, UART_RS485CTRL_DCTRL_EN | UART_RS485CTRL_OINV_1);
+    	Chip_SCU_PinMux(DIR_RS485_MUX_GROUP, DIR_RS485_MUX_PIN, MD_PDN, FUNC2);              /* P6_2: UART0_DIR */
+    }
 }
 
-uint32_t Init_Uart_Rs485(void)
+void UARTActivInt(uart_t u, void *ptrIntFunc)
 {
-
-	/** \details
-	 * This function initialize the ADC peripheral in the EDU-CIAA board,
-	 * with the correct parameters with LPCOpen library. It uses CH1
-	 *
-	 * \param none
-	 *
-	 * \return uint8_t: TBD (to support errors in the init function)
-	 * */
-
-	/*UART initialization*/
-
-	/* UART0 (RS485/Profibus) */
-	Chip_UART_Init(RS485_UART);
-	Chip_UART_SetBaud(RS485_UART, 115200);
-
-	Chip_UART_SetupFIFOS(RS485_UART, UART_FCR_FIFO_EN | UART_FCR_TRG_LEV0);
-
-	Chip_UART_TXEnable(RS485_UART);
-
-	Chip_SCU_PinMux(RS485_TXD_MUX_GROUP, RS485_TXD_MUX_PIN, MD_PDN, FUNC7);              /* P9_5: UART0_TXD */
-	Chip_SCU_PinMux(RS485_RXD_MUX_GROUP, RS485_RXD_MUX_PIN, MD_PLN|MD_EZI|MD_ZI, FUNC7); /* P9_6: UART0_RXD */
-
-	Chip_UART_SetRS485Flags(RS485_UART, UART_RS485CTRL_DCTRL_EN | UART_RS485CTRL_OINV_1);
-
-	Chip_SCU_PinMux(6, 2, MD_PDN, FUNC2);              /* P6_2: UART0_DIR */
-
-	return TRUE;
+	ptrUartFunc[u] = ptrIntFunc;
+//	Chip_UART_IntEnable((LPC_USART_T *)uarts[u].uart, UART_IER_RBRINT);
+	NVIC_SetPriority(26, 0x1f);
+	switch(u)
+		{
+		case UART_USB:
+			NVIC_EnableIRQ(26); /* USART2_IRQn definido en cmsis_43xx.h*/
+			break;
+		case UART_RS232:
+			NVIC_EnableIRQ(27); /* USART3_IRQn definido en cmsis_43xx.h*/
+			break;
+		case UART_RS485:
+			NVIC_EnableIRQ(24); /* USART0_IRQn definido en cmsis_43xx.h*/
+			break;
+		}
+	initInt[u] = true;
 }
 
-uint32_t Init_Uart_Rs232(void)
+uint32_t UARTTxState(uart_t u)
 {
-
-	/** \details
-	 * This function initialize the ADC peripheral in the EDU-CIAA board,
-	 * with the correct parameters with LPCOpen library. It uses CH1
-	 *
-	 * \param none
-	 *
-	 * \return uint8_t: TBD (to support errors in the init function)
-	 * */
-
-	/*UART initialization*/
-
-	/* UART3 (RS232) */
-	Chip_UART_Init(RS232_UART);
-	Chip_UART_SetBaud(RS232_UART, 115200);
-
-	Chip_UART_SetupFIFOS(RS232_UART, UART_FCR_FIFO_EN | UART_FCR_TRG_LEV0);
-
-	Chip_UART_TXEnable(RS232_UART);
-
-	Chip_SCU_PinMux(RS232_TXD_MUX_GROUP, RS232_TXD_MUX_PIN, MD_PDN, FUNC2);              /* P2_3: UART3_TXD */
-	Chip_SCU_PinMux(RS232_TXD_MUX_GROUP, RS232_RXD_MUX_PIN, MD_PLN|MD_EZI|MD_ZI, FUNC2); /* P2_4: UART3_RXD */
-
-	return TRUE;
+	return Chip_UART_ReadLineStatus((LPC_USART_T *)uarts[u].uart) & UART_LSR_THRE; /* Line status: Transmit holding register empty */
 }
 
-uint32_t ReadStatus_Uart_Rs232(void)
+uint32_t UARTRxState(uart_t u)
 {
-	return Chip_UART_ReadLineStatus((LPC_USART_T *)LPC_USART3) & UART_LSR_THRE;
+	return Chip_UART_ReadLineStatus((LPC_USART_T *)uarts[u].uart) & UART_LSR_RDR; /* Line status: Receive data ready */
 }
 
-uint32_t ReadStatus_Uart_Ftdi(void)
+uint8_t UARTReadByte(uart_t u, uint8_t* dat)
 {
-	return Chip_UART_ReadLineStatus((LPC_USART_T *)LPC_USART2) & UART_LSR_THRE;
-
-}
-uint32_t ReadRxReady_Uart_Ftdi(void)
-{
-	return Chip_UART_ReadLineStatus( (LPC_USART_T *)LPC_USART2) & UART_LSR_RDR;
-}
-
-uint32_t ReadRxReady_Uart_Rs232(void)
-{
-	return Chip_UART_ReadLineStatus( (LPC_USART_T *)LPC_USART3) & UART_LSR_RDR;
-}
-
-
-uint8_t ReadByte_Uart_Ftdi(uint8_t* dat)
-{
-	if (ReadRxReady_Uart_Ftdi())
+	if (UARTRxState(u))
 	{
-		*dat = Chip_UART_ReadByte((LPC_USART_T *)LPC_USART2);
+		*dat = Chip_UART_ReadByte((LPC_USART_T *)uarts[u].uart);
 		return TRUE;
 	}
 	else
@@ -237,111 +151,100 @@ uint8_t ReadByte_Uart_Ftdi(uint8_t* dat)
 	}
 }
 
-uint8_t ReadByte_Uart_Rs232(uint8_t* dat)
+void UARTSendByte(uart_t u, uint8_t* dat)
 {
-	if (ReadRxReady_Uart_Rs232())
-	{
-		*dat = Chip_UART_ReadByte((LPC_USART_T *)LPC_USART3);
-		return TRUE;
-	}
-	else
-	{
-		return FALSE;
-	}
+	while(UARTTxState(u) == 0);
+	Chip_UART_SendByte((LPC_USART_T *)uarts[u].uart, *dat);
 }
 
-
-void SendString_Uart_Ftdi(uint8_t* msg)
+void UARTSendString(uart_t u, uint8_t* msg)
 {
-	/* sending byte by byte*/
 	while(*msg != 0)
 	{
-		while(ReadStatus_Uart_Ftdi() == 0);
-		Chip_UART_SendByte((LPC_USART_T *)LPC_USART2, (uint8_t)*msg);
+		while(UARTTxState(u) == 0);
+		Chip_UART_SendByte((LPC_USART_T *)uarts[u].uart, (uint8_t)*msg);
 		msg++;
 	}
 }
 
-void SendByte_Uart_Ftdi(uint8_t* dat)
+void UART2_IRQHandler (void)
 {
-	while(ReadStatus_Uart_Ftdi() == 0);
-	Chip_UART_SendByte((LPC_USART_T *)LPC_USART2, *dat);
-}
-void SendByte_Uart_Rs232(uint8_t* dat)
-{
-	while(ReadStatus_Uart_Rs232() == 0);
-	Chip_UART_SendByte((LPC_USART_T *)LPC_USART3, *dat);
+	if(initRing[0])
+		Chip_UART_IRQRBHandler((LPC_USART_T *)uarts[0].uart, &rxRing[0], &txRing[0]);
+	if(initInt[0])
+		ptrUartFunc[0]();
 }
 
-void SendString_Uart_Rs232(uint8_t* msg)
+void UART3_IRQHandler(void)
 {
-	/* sending byte by byte*/
-	while(*msg != 0)
+	if(initRing[1])
+		Chip_UART_IRQRBHandler((LPC_USART_T *)uarts[1].uart, &rxRing[1], &txRing[1]);
+	if(initInt[1])
+		ptrUartFunc[1]();
+}
+
+void UART0_IRQHandler (void)
+{
+	if(initRing[2])
+		Chip_UART_IRQRBHandler((LPC_USART_T *)uarts[2].uart, &rxRing[2], &txRing[2]);
+	if(initInt[2])
+		ptrUartFunc[2]();
+}
+
+void UARTInitRingBuffer(uart_t u)
+{
+	RingBuffer_Init(&rxRing[u], rxBuff[u], 1, BUFFSize); /* Buffer de recepcion de 1 byte*/
+	RingBuffer_Init(&txRing[u], txBuff[u], 1, BUFFSize);/* Buffer de transmision de 1 byte*/
+	Chip_UART_SetupFIFOS((LPC_USART_T *)uarts[u].uart, (UART_FCR_FIFO_EN | UART_FCR_RX_RS | UART_FCR_TX_RS | UART_FCR_TRG_LEV3));
+	Chip_UART_IntEnable((LPC_USART_T *)uarts[u].uart, (UART_IER_RBRINT | UART_IER_RLSINT));
+	switch(u)
 	{
-		while(ReadStatus_Uart_Rs232() == 0);
-		Chip_UART_SendByte((LPC_USART_T *)LPC_USART3, (uint8_t) *msg);
-		msg++;
+	case UART_USB:
+		NVIC_EnableIRQ(26); /* USART2_IRQn definido en cmsis_43xx.h*/
+		break;
+	case UART_RS232:
+		NVIC_EnableIRQ(27); /* USART3_IRQn definido en cmsis_43xx.h*/
+		break;
+	case UART_RS485:
+		NVIC_EnableIRQ(24); /* USART0_IRQn definido en cmsis_43xx.h*/
+		break;
 	}
+	initRing[u] = true;
 }
 
-void IntToString(int16_t value, uint8_t* pBuf, uint32_t len, uint32_t base)
+unsigned int UARTSendRingBuffer(uart_t u, const uint8_t *dat, unsigned int datLen)
 {
-	/**
-	 * \details
-	 * Conversion method to obtain a character or a string from a float to send
-	 * throw UART peripheral.
-	 * */
-    static const char* pAscii = "0123456789abcdefghijklmnopqrstuvwxyz";
-    int pos = 0;
-    int tmpValue = value;
-
-    /*  the buffer must not be null and at least have a length of 2 to handle one */
-    /*  digit and null-terminator */
-    if (pBuf == NULL || len < 2)
-    {
-        return;
-    }
-
-    /* a valid base cannot be less than 2 or larger than 36 */
-    /* a base value of 2 means binary representation. A value of 1 would mean only zeros */
-    /*  a base larger than 36 can only be used if a larger alphabet were used. */
-    if (base < 2 || base > 36)
-    {
-        return;
-    }
-
-    /* negative value */
-    if (value < 0)
-    {
-        tmpValue = -tmpValue;
-        value    = -value;
-        pBuf[pos++] = '-';
-    }
-
-    /* calculate the required length of the buffer */
-    do {
-        pos++;
-        tmpValue /= base;
-    } while(tmpValue > 0);
-
-
-    if (pos > len)
-    {
-    	/* the len parameter is invalid. */
-        return;
-    }
-
-    pBuf[pos] = '\0';
-
-    do {
-        pBuf[--pos] = pAscii[value % base];
-        value /= base;
-    } while(value > 0);
-
-    return;
+	unsigned int transmited = 0;
+	unsigned int toInsert;
+	unsigned int freeSpc;
+	while(transmited < datLen)
+	{
+		freeSpc = RingBuffer_GetFree(&txRing[u]);
+		while(!freeSpc)
+			freeSpc = RingBuffer_GetFree(&txRing[u]);
+		toInsert = ((freeSpc > datLen) ? datLen : freeSpc);
+		Chip_UART_SendRB((LPC_USART_T *)uarts[u].uart, &txRing[u], &dat[transmited], toInsert);
+		transmited += toInsert;
+	}
+	return transmited;
 }
 
-/** @} doxygen end group definition */
-/** @} doxygen end group definition */
-/** @} doxygen end group definition */
+unsigned int UARTReadRingBuffer(uart_t u, uint8_t *dat, unsigned int maxDat)
+{
+	return Chip_UART_ReadRB((LPC_USART_T *)uarts[u].uart, &rxRing[u], dat, maxDat);
+}
+
+char* UARTItoa(uint32_t val, uint8_t base)
+{
+	static char buf[32] = {0};
+
+	uint32_t i = 30;
+
+	for(; val && i ; --i, val /= base)
+
+		buf[i] = "0123456789abcdef"[val % base];
+
+	return &buf[i+1];
+}
+
 /*==================[end of file]============================================*/

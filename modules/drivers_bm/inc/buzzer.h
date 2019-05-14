@@ -1,7 +1,8 @@
-/* Copyright 2016, Eduardo Filomena - Juan Manuel Reta
- * efilomena@bioingenieria.edu.ar      jmreta@bioingenieria.edu.ar
+/* Copyright 2019,
+ * Sebastian Mateos
+ * smateos@ingenieria.uner.edu.ar
  * Facultad de Ingeniería
- * Universidad Nacional of Entre Ríos
+ * Universidad Nacional de Entre Ríos
  * Argentina
  *
  * All rights reserved.
@@ -33,65 +34,45 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
+#ifndef BUZZER_H
+#define BUZZER_H
 
-/** \Función itoa: 
- **
- ** Función itoa: convierte un entero a una cadena
- **
- **/
 
-/*
- * Initials     Name
- * ---------------------------
- *	EF			Eduardo Filomena
- *  JMR         Juan Manuel Reta
- */
-
-/*
- * modification history (new versions first)
- * -----------------------------------------------------------
- * 20160807  v0.1 Initial version
- * 20160808 v0.2 modifications and improvements made by Juan Manuel Reta
- *
- */
- 
 /*==================[inclusions]=============================================*/
-#include "itoa.h"
+#include "bool.h"
+#include <stdint.h>
 
-/*==================[macros and definitions]=================================*/
+/*==================[macros]=================================================*/
+#define lpc4337            1
+#define mk60fx512vlq15     2
 
-/*==================[internal data declaration]==============================*/
+/*==================[typedef]================================================*/
 
-/*==================[internal functions declaration]=========================*/
-
-/*==================[internal data definition]===============================*/
-
-/*==================[external data definition]===============================*/
-
-/*==================[internal functions definition]==========================*/
-
-/*==================[external functions definition]==========================*/
-/** \Funci�n itoa: convierte un entero a una cadena */
-
-// sacado de: http://www.strudel.org.uk/itoa/
-
-char* Itoa(uint32_t val, uint8_t base)
-{
-	static char buf[32] = {0};
-	
-	uint32_t i = 30;
-	
-	for(; val && i ; --i, val /= base)
-	
-		buf[i] = "0123456789abcdef"[val % base];
-	
-	return &buf[i+1];
-}
+/*==================[external data declaration]==============================*/
 
 
+/*==================[external functions declaration]=========================*/
+
+/** \brief Initialization function
+ ** 
+ ** \return TRUE if no error
+ **/
+uint8_t BuzzerInit(void);
 
 
-/** @} doxygen end group definition */
-/** @} doxygen end group definition */
-/** @} doxygen end group definition */
+/** \brief Function to turn on buzzer
+ **/
+void BuzzerOn(void);
+
+/** \brief Function to turn off buzzer
+ **/
+void BuzzerOff(void);
+
+/** \brief Function to turn off buzzer
+ ** param[in] frec Frequency of tone of the buzzer
+ **/
+void BuzzerSetFrec(uint16_t frec);
+
 /*==================[end of file]============================================*/
+#endif /* #ifndef BUZZER_H */
+

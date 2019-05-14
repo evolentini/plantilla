@@ -1,17 +1,10 @@
-/* Copyright 2019,
- * Sebastian Mateos
- * smateos@ingenieria.uner.edu.ar
- * Leandro D. Medus
- * lmedus@bioingenieria.edu.ar
- * Eduardo Filomena
- * efilomena@bioingenieria.edu.ar
- * Juan Manuel Reta
- * jmrera@bioingenieria.edu.ar
- * Facultad de Ingeniería
- * Universidad Nacional de Entre Ríos
- * Argentina
- *
+/* Copyright 2014, Mariano Cerdeiro
+ * Copyright 2014, ACSE & CADIEEL
+ *    ACSE   : http://www.sase.com.ar/asociacion-civil-sistemas-embebidos/ciaa/
+ *    CADIEEL: http://www.cadieel.org.ar
  * All rights reserved.
+ *
+ * This file is part of CIAA Firmware.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -41,65 +34,65 @@
  *
  */
 
-
-#ifndef DAC_H
-#define DAC_H
-
-/** @brief DA Converter Bare Metal driver for the peripheral in EDU-CIAA NXP Board.
- * This is a driver to control the peripheral Digital to Analog Converter.
+#ifndef CIAAPOSIX_STDBOOL_H
+#define CIAAPOSIX_STDBOOL_H
+/** \brief ciaa POSIX stdbool header file
+ **
+ ** ciaa POSIX stdbool header file
+ **
  **/
+
+/** \addtogroup CIAA_Firmware CIAA Firmware
+ ** @{ */
+/** \addtogroup POSIX POSIX Implementation
+ ** @{ */
 
 /*
  * Initials     Name
  * ---------------------------
- *	LM			Leandro Medus
- *  EF			Eduardo Filomena
- *  JMR			Juan Manuel Reta
- *  SM			Sebastian Mateos
+ *
  */
 
 /*
- * modification history
+ * modification history (new versions first)
  * -----------------------------------------------------------
- * 20160422 v0.1 initials initial version leo
- * 20160807 v0.2 modifications and improvements made by Eduardo Filomena
- * 20160808 v0.3 modifications and improvements made by Juan Manuel Reta
- * 20190407 v1.0 modifications and improvements made by Sebastian Mateos
+ * yyyymmdd v0.0.1 initials initial version
  */
 
 /*==================[inclusions]=============================================*/
-#include <stdint.h>
-#include "bool.h"
+
+/*==================[cplusplus]==============================================*/
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*==================[macros]=================================================*/
-
+/** \brief true */
+#define true      1
+/** \brief false */
+#define false     0
+/** \brief bool
+ **
+ ** bool is not a type but a macro exapnded to _Bool
+ **/
+/*@-namechecks@*/
+#define bool   _Bool
+/** \brief Bool, true and false are defined */
+#define __bool_true_false_are_defined  1
+/*@=namechecks@*/
 
 /*==================[typedef]================================================*/
 
-
 /*==================[external data declaration]==============================*/
 
-
 /*==================[external functions declaration]=========================*/
-/** @brief Initialization function to control dac in the EDU-CIAA BOARD
- *
- * @details This function initialize the DAC peripheral in the EDU-CIAA board,
- * with the correct parameters with LPCOpen methods.
- *
- * @return TRUE if no error
- *
- **/
-uint8_t DACInit(void);
 
-/** @brief Function to update dac value
- *
- * @param[in] value (10 bits)
- *
- * @return TRUE if no error
- *
- **/
-uint8_t DACUpdateValue(uint16_t value);
-
+/*==================[cplusplus]==============================================*/
+#ifdef __cplusplus
+}
+#endif
+/** @} doxygen end group definition */
+/** @} doxygen end group definition */
 /*==================[end of file]============================================*/
-#endif /* #ifndef DAC_H */
+#endif /* #ifndef CIAAPOSIX_STDBOOL_H */
 

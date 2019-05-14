@@ -1,4 +1,6 @@
-/* Copyright 2016, 
+/* Copyright 2019,
+ * Sebastian Mateos
+ * smateos@ingenieria.uner.edu.ar
  * Leandro D. Medus
  * lmedus@bioingenieria.edu.ar
  * Eduardo Filomena
@@ -39,8 +41,8 @@
  *
  */
 
-/** \brief Bare Metal driver for dac in the EDU-CIAA board.
- **
+/** @brief Bare Metal driver for dac in the EDU-CIAA board.
+ *
  **/
 
 /*
@@ -49,18 +51,21 @@
  *	LM			Leandro Medus
  *  EF			Eduardo Filomena
  *  JMR			Juan Manuel Reta
+ *  SM			Sebastian Mateos
  */
 
 /*
- * modification history (new versions first)
+ * modification history
  * -----------------------------------------------------------
  * 20160422 v0.1 initials initial version leo
  * 20160807 v0.2 modifications and improvements made by Eduardo Filomena
  * 20160808 v0.3 modifications and improvements made by Juan Manuel Reta
+ * 20190407 v1.0 modifications and improvements made by Sebastian Mateos
  */
 
 /*==================[inclusions]=============================================*/
 #include "dac.h"
+#include "chip.h"
 
 /*==================[macros and definitions]=================================*/
 #define DAC_RESOLUTION	10
@@ -77,18 +82,9 @@
 /*==================[internal functions definition]==========================*/
 
 /*==================[external functions definition]==========================*/
-/** \brief DAC Initialization method  */
-uint8_t Init_Dac(void)
-{
-	/** \details
-	 * This function initialize the DAC peripheral in the EDU-CIAA board,
-	 * with the correct parameters with LPCOpen methods.
-	 *
-	 * \param none
-	 *
-	 * \return uint8_t: TBD (to support errors in the init function)
-	 * */
 
+uint8_t DACInit(void)
+{
 	/** DAC function selection */
 	Chip_SCU_DAC_Analog_Config();
 
@@ -101,14 +97,14 @@ uint8_t Init_Dac(void)
 	return TRUE;
 }
 
-uint8_t Update_Dac_Value(uint16_t value)
+uint8_t DACUpdateValue(uint16_t value)
 {
-	uint8_t errorCheck = 0;
+	uint8_t errorCheck = TRUE;
 
 	if( value >= DAC_MAX_VALUE)
 	{
 		value = DAC_MAX_VALUE;
-		errorCheck = 1;
+		errorCheck = FALSE;
 	}
 
 	Chip_DAC_UpdateValue(LPC_DAC,value);
@@ -117,14 +113,4 @@ uint8_t Update_Dac_Value(uint16_t value)
 	return errorCheck;
 }
 
-/** @} doxygen end group definition */
-/** @} doxygen end group definition */
-/** @} doxygen end group definition */
 /*==================[end of file]============================================*/
-
-
-/*
- * Para los pulsadores
- * Chip_GPIO_ReadValue()
- * Chip_GPIO_ReadPortBit()
- * */

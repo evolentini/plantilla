@@ -5,6 +5,8 @@
  * efilomena@bioingenieria.edu.ar
  * Juan Manuel Reta
  * jmrera@bioingenieria.edu.ar
+ * Sebastian Mateos
+ * smateos@ingenieria.uner.edu.ar
  * Facultad de Ingeniería
  * Universidad Nacional de Entre Ríos
  * Argentina
@@ -72,31 +74,50 @@
  */
 
 /*==================[inclusions]=============================================*/
-#include "stdint.h"
-#include "chip.h"
+#include "bool.h"
+#include <stdint.h>
 
 /*==================[macros]=================================================*/
-#define lpc4337            1
-#define mk60fx512vlq15     2
 
 /*==================[typedef]================================================*/
-
+/** @typedef switchgp_t
+ * @brief Define the key interrupt groups
+ */
+typedef enum {
+	GPIOGP0=0, /**< Group of interruptions GPIO0_IRQHandler 32 */
+	GPIOGP1, /**< Group of interruptions GPIO1_IRQHandler 33 */
+	GPIOGP2, /**< Group of interruptions GPIO2_IRQHandler 34 */
+	GPIOGP3, /**< Group of interruptions GPIO3_IRQHandler 35 */
+} switchgp_t;
 
 /*==================[external data declaration]==============================*/
-enum SWITCHES {NO_KEY, TEC1, TEC2, TEC3, TEC4};
+enum SWITCHES {SWITCH_1=(1<<0), SWITCH_2=(1<<1), SWITCH_3=(1<<2), SWITCH_4=(1<<3)};
 
 /*==================[external functions declaration]=========================*/
 /** \brief Initialization function to control basic push-buttons in the EDU-CIAA BOARD 
  ** 
  ** \return TRUE if no error
  **/
-uint8_t Init_Switches(void);
+uint8_t SwitchesInit(void);
 
 /** \brief Function to read basic push-buttons 
  **
- ** \return 0 if no keypressed, TEC1 TEC2 TEC3 TEC4 in other case
+ ** \return 0 if no keypressed, SWITCH_1 SWITCH_2 SWITCH_3 SWITCH_4 in other case
  **/
-uint8_t Read_Switches(void);
+uint8_t SwitchesRead(void);
+
+/** \brief Enables the interruption of a particular key and assigns a group of interrupts defined in @ref switchgp_t
+ * \param[in] gp Indicates to which group of interrupts the key is assigned
+ * \param[in] tec Key that will interrupt
+ * \param[in] ptrIntFunc Function to be called in the interruption
+ */
+void SwitchActivInt(switchgp_t gp, uint8_t tec, void *ptrIntFunc);
+
+/** \brief Activate group interrupts and add to the interruption the chosen keys through the mask
+ * \param[in] tecs Mask of keys that will be added to the group to interrupt. Where bit0-TEC4, bit1-TEC3, bit2-TEC2 and bit4-TEC1.
+ * \param[in] void * Function to be called in the interruption.
+ */
+void SwitchesActivGroupInt(uint8_t tecs, void *ptrIntFunc);
 
 /** @} doxygen end group definition */
 /** @} doxygen end group definition */

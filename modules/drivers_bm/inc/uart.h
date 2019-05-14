@@ -1,10 +1,7 @@
-/* Copyright 2016, 
- * Leandro D. Medus
- * lmedus@bioingenieria.edu.ar
- * Eduardo Filomena
- * efilomena@bioingenieria.edu.ar
- * Juan Manuel Reta
- * jmrera@bioingenieria.edu.ar
+/* Copyright 2018,
+ * Sebastian Mateos
+ * sebastianantoniomateos@gmail.com
+ * Cátedra Electrónica Programable
  * Facultad de Ingeniería
  * Universidad Nacional de Entre Ríos
  * Argentina
@@ -39,74 +36,147 @@
  *
  */
 
-
-#ifndef UART_H
-#define UART_H
-
-/** \brief UART Bare Metal driver for the peripheral in the EDU-CIAA Board.
- **
- ** This is a driver to control the UART present in the EDU-CIAA Board.
- **
+/** @brief Driver Bare Metal para los pulsadores y teclas de la EDU-CIAA.
  **/
-
-/** \addtogroup EDU-CIAA_Course
- ** @{ */
-/** \addtogroup Sources_LDM Leandro D. Medus Sources
- ** @{ */
-/** \addtogroup Baremetal_App Bare Metal application source file
- ** @{ */
 
 /*
  * Initials     Name
  * ---------------------------
- *	LM			Leandro Medus
+ *  SM			Sebastian Mateos
  */
 
 /*
- * modification history (new versions first)
+ * modification history
  * -----------------------------------------------------------
- * 20160610 v0.1 initials initial version leo
+ * 20180922 v0.1 version inicial SM
  */
 
+#ifndef UART_H
+#define UART_H
+
+
+
 /*==================[inclusions]=============================================*/
-#include "stdint.h"
-#include "chip.h"
-//#include "srting.h"
+#include <stdint.h>
+#include "bool.h"
 
 /*==================[macros]=================================================*/
+#define BUFFSize 64 /**< Cantidad máxima de valores a alojar en el buffer de entrada y en el de salida*/
+#define BAUDRATE_USB 115200 /**< Baudios por segundo de la uart USB*/
+#define BAUDRATE_RS232 9600 /**< Baudios por segundo de la uart RS232*/
+#define BAUDRATE_RS485 115200 /**< Baudios por segundo de la uart RS485*/
 
 /*==================[typedef]================================================*/
-#define USB_UART    LPC_USART2
-#define RS232_UART  LPC_USART3
-#define RS485_UART  LPC_USART0
+/** @typedef struct configUart_t
+ * @brief Opciones de configuracion de las uart de la EDU-CIAA
+ **/
+typedef struct
+{
+	uint32_t uart;
+	uint8_t rxHwPort;
+	uint8_t rxHwPin;
+	uint8_t txHwPort;
+	uint8_t txHwPin;
+	uint8_t func;
+	uint32_t baudrate;
+	uint32_t configOpt;
+	uint32_t configFifo;
+}configUart_t;
+
+/** @typedef enum uart_t
+ * @brief Uarts disponibles en la EDU-CIAA
+ */
+typedef enum{
+	UART_USB=0,
+	UART_RS232,
+	UART_RS485
+}uart_t;
 
 /*==================[external data declaration]==============================*/
 
-/*==================[external functions declaration]=========================*/
-uint32_t Init_Uart_Ftdi(void);
-uint32_t Init_Uart_Rs485(void);
-uint32_t Init_Uart_Rs232(void);
+/*==================[internal functions declaration]=========================*/
+/** @fn void UARTInit(uart_t u)
+ * @brief Inicializacion de la UART FTDI, de modo de trabajar sin interrupciones
+ *  y utilizar funciones de lectura y escritura blockeantes
+ * @param[in] u Indica que Uart va a inicializar
+ */
+void UARTInit(uart_t u);
 
-uint8_t ReadByte_Uart_Ftdi(uint8_t* dat);
-uint8_t ReadByte_Uart_Rs232(uint8_t* dat);
+/** @fn void UARTActivInt(uart_t u, void *ptrIntFunc)
+ * @brief Activa la interrupcion por recepcion de la uart y realiza la funcion pasada por parametro
+ * @param[in] u Indica a que Uart  va a activar la interrupcion
+ * @param[in] ptrIntFunc Puntero a la funcion que se desea realizar
+ */
+void UARTActivInt(uart_t u, void *ptrIntFunc);
 
-uint32_t ReadStatus_Uart_Ftdi(void);
-uint32_t ReadStatus_Uart_Rs232(void);
+/** @fn uint32_t UARTTxState(uart_t u)
+ * @brief Devuelve el estado de la linea de transmision de la uart
+ * @param[in] u Indica de que Uart va a devolver el estado
+ * @return Devuelve un true si el registro de transmision esta vacio
+ */
+uint32_t UARTTxState(uart_t u);
 
-uint32_t ReadRxReady_Uart_Ftdi(void);
-uint32_t ReadRxReady_Uart_Rs232(void);
+/** @fn uint32_t UARTRxState(uart_t u)
+ * @brief Devuelve el estado de la linea de recepcion de la uart
+ * @param[in] u Indica de que Uart va a devolver el estado
+ * @return Devuelve un true si el registro de recepcion esta listo para recibir un dato
+ */
+uint32_t UARTRxState(uart_t u);
 
+/** @fn uint8_t UARTReadByte(uart_t u, uint8_t* dat)
+ * @brief Lectura de un byte de la uart
+ * @param[in] uart Indica de que Uart va a leer el dato
+ * @param[in] dat Puntero al buffer de recepcion
+ * @return Devuelve un true si se leyo un dato o un false si no habia dato para leer
+ */
+uint8_t UARTReadByte(uart_t u, uint8_t* dat);
 
-void SendByte_Uart_Ftdi(uint8_t* dat);
-void SendByte_Uart_Rs232(uint8_t* dat);
-void SendString_Uart_Ftdi(uint8_t *msg);
-void SendString_Uart_Rs232(uint8_t *msg);
+/** @fn void UARTSendByte(uart_t u, uint8_t* dat)
+ * @brief Envio blockeante de un byte a traves de la uart
+ * @param[in] u Indica a traves de que Uart va a enviar el dato
+ * @param[in] dat Puntero al buffer de transmision
+ */
+void UARTSendByte(uart_t u, uint8_t* dat);
 
-void IntToString(int16_t value, uint8_t* pBuf, uint32_t len, uint32_t base);
+/** @fn void UARTSendString(uart_t u, uint8_t* msg)
+ * @brief Envio blockeante de una cadena de bytes a traves de la uart
+ * @param[in] u Indica a traves de que Uart va a enviar la cadena
+ * @param[in] msg Puntero al buffer de transmision
+ */
+void UARTSendString(uart_t u, uint8_t* msg);
 
-/** @} doxygen end group definition */
-/** @} doxygen end group definition */
-/** @} doxygen end group definition */
+/** @fn void UARTInitRingBuffer(uart_t u)
+ * @brief Inicializacion del buffer circular para la uart elegida
+ * @param[in] u Indica para que Uart va a inicializar el buffer
+ */
+void UARTInitRingBuffer(uart_t u);
+
+/** @fn unsigned int UARTSendRingBuffer(uart_t u, const uint8_t *data, unsigned int dataLen)
+ * @brief Envio a traves del buffer circular de una cantidad limitada por BUFSize de datos
+ * @param[in] u Indica a traves de que Uart va a enviar los datos
+ * @param[in] dat Puntero al buffer de transmision
+ * @param[in] datLen Longitud del buffer de transmision
+ * @return Cantidad de datos transmitidos
+ */
+unsigned int UARTSendRingBuffer(uart_t u, const uint8_t *dat, unsigned int datLen);
+
+/** @fn unsigned int UARTReadRingBuffer(uart_t u, uint8_t *data, unsigned int maxDat)
+ * @brief Recepcion de datos a traves del buffer circular
+ * @param[in] u Indica a traves de que Uart se van a recibir los datos
+ * @param[in] dat Puntero al buffer de recepcion
+ * @param[in] maxDat Cantidad maxima de datos que se va a recibir
+ * @return Cantdidad de datos recibidos
+ */
+unsigned int UARTReadRingBuffer(uart_t u, uint8_t *dat, unsigned int maxDat);
+
+/** @fn char* UARTItoa(uint32_t val, uint8_t base)
+ * @brief Conversor de entero a ASCII
+ * @param[in] val Valor entero que se desea convertir
+ * @param[in] base Base sobre la cual se desea realizar la conversion
+ * @return Puntero al primer elemento de la cadena convertida
+ */
+char* UARTItoa(uint32_t val, uint8_t base);
+
 /*==================[end of file]============================================*/
-#endif /* #ifndef MI_NUEVO_PROYECTO_H */
+#endif /* UART_H */
 

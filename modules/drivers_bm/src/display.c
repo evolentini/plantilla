@@ -59,7 +59,7 @@
 /* === Definiciones de variables externas ====================================================== */
 
 /* === Definiciones de funciones internas =====================================================- */
-void delay(int value) {
+void __attribute__((optimize("O0"))) delay(int value) {
    int index;
    for(index = 1; index < value; index++);
 }
