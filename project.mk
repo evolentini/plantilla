@@ -20,5 +20,6 @@
 # Project path
 PROJECT_PATH = projects
 # Project name
-PROJECT_NAME = blinking_freertos
+#PROJECT_NAME = blinking_freertos
+PROJECT_NAME = AutoRC
 
