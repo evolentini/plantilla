@@ -92,6 +92,20 @@ typedef enum{
 	UART_RS485
 }uart_t;
 
+/** @typedef enum intFlag_t
+ * @brief Opciones de configuracion de las interrupciones de la uart de la EDU-CIAA
+ **/
+typedef enum
+{
+	UART_RBRINT = (1 << 0),	/*!< RBR Interrupt enable */
+	UART_THREINT = (1 << 1),	/*!< THR Interrupt enable */
+	UART_RLSINT = (1 << 2),	/*!< RX line status interrupt enable */
+	UART_MSINT = (1 << 3),	/*!< Modem status interrupt enable - valid for 11xx, 17xx/40xx UART1, 18xx/43xx UART1  only */
+	UART_CTSINT = (1 << 7),	/*!< CTS signal transition interrupt enable - valid for 17xx/40xx UART1, 18xx/43xx UART1 only */
+	UART_ABEOINT = (1 << 8),	/*!< Enables the end of auto-baud interrupt */
+	UART_ABTOINT = (1 << 9)	/*!< Enables the auto-baud time-out interrupt */
+}intFlag_t;
+
 /*==================[external data declaration]==============================*/
 
 /*==================[internal functions declaration]=========================*/
@@ -103,11 +117,25 @@ typedef enum{
 void UARTInit(uart_t u);
 
 /** @fn void UARTActivInt(uart_t u, void *ptrIntFunc)
- * @brief Activa la interrupcion por recepcion de la uart y realiza la funcion pasada por parametro
+ * @brief Activa la interrupcion de la uart y realiza la funcion pasada por parametro
  * @param[in] u Indica a que Uart  va a activar la interrupcion
  * @param[in] ptrIntFunc Puntero a la funcion que se desea realizar
  */
 void UARTActivInt(uart_t u, void *ptrIntFunc);
+
+/** @fn void UARTIntEnable(uart_t u, intFlag_t flag)
+ * @brief Activa la interrupcion por recepcion de la uart y realiza la funcion pasada por parametro
+ * @param[in] u Indica a que Uart le va a habilitar la interrupcion
+ * @param[in] flag Bandera de interrupcion que se va a utilizar
+ */
+void UARTIntEnable(uart_t u, intFlag_t flag);
+
+/** @fn void UARTIntDisable(uart_t u, intFlag_t flag)
+ * @brief Habilita la interrupcion por recepcion de la uart y realiza la funcion pasada por parametro
+ * @param[in] u Indica a que Uart le va a deshabilitar la interrupcion
+ * @param[in] flag Bandera de interrupcion que se va a deshabilitar
+ */
+void UARTIntDisable(uart_t u, intFlag_t flag);
 
 /** @fn uint32_t UARTTxState(uart_t u)
  * @brief Devuelve el estado de la linea de transmision de la uart

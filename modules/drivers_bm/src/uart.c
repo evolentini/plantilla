@@ -111,21 +111,31 @@ void UARTInit(uart_t u)
 void UARTActivInt(uart_t u, void *ptrIntFunc)
 {
 	ptrUartFunc[u] = ptrIntFunc;
-//	Chip_UART_IntEnable((LPC_USART_T *)uarts[u].uart, UART_IER_RBRINT);
-	NVIC_SetPriority(26, 0x1f);
 	switch(u)
 		{
 		case UART_USB:
+			NVIC_SetPriority(26, 0x1f);
 			NVIC_EnableIRQ(26); /* USART2_IRQn definido en cmsis_43xx.h*/
 			break;
 		case UART_RS232:
+			NVIC_SetPriority(27, 0x1f);
 			NVIC_EnableIRQ(27); /* USART3_IRQn definido en cmsis_43xx.h*/
 			break;
 		case UART_RS485:
+			NVIC_SetPriority(28, 0x1f);
 			NVIC_EnableIRQ(24); /* USART0_IRQn definido en cmsis_43xx.h*/
 			break;
 		}
 	initInt[u] = true;
+}
+void UARTIntEnable(uart_t u, intFlag_t flag)
+{
+	Chip_UART_IntEnable((LPC_USART_T *)uarts[u].uart, flag);
+}
+
+void UARTIntDisable(uart_t u, intFlag_t flag)
+{
+	Chip_UART_IntDisable((LPC_USART_T *)uarts[u].uart, flag);
 }
 
 uint32_t UARTTxState(uart_t u)
