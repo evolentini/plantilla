@@ -60,19 +60,39 @@
 #include "queue.h"
 #include "led.h"
 #include "switch.h"
+#include "gpio.h"
 #include "uart.h"
+#include "pwm_sct.h"
+#include "servo.h"
 #include <string.h>
 
 /* === Definicion y Macros ================================================= */
 #define EVENTO_CARACTER   (1 << 0)
 #define EVENTO_CADENA   (1 << 1)
 
+#define PIN_ADELANTE T_FIL2
+#define PIN_ATRAS    T_COL0
+#define PIN_BOCINA   LCD2
+
+#define CTOUT1 1
+#define CTOUT1_PORT 4
+#define CTOUT1_PIN  1
+#define CTOUT1_FUNC FUNC1
+
+#define CTOUT3 3
+#define CTOUT3_PORT 4
+#define CTOUT3_PIN  3
+#define CTOUT3_FUNC FUNC1
+
+#define INIT_FREC 50
+
 #define ADELANTE 0xF1
 #define ATRAS 0xF2
 #define FRENAR 0xF3
 #define CABEZAL 0xF4
 #define APAGAR_TODO 0xF5
-#define ANGULO_CERO 88
+//#define ANGULO_CERO 90
+#define ANGULO_CERO 150
 
 #define LUCES_DELANTERAS (1<<7)
 #define LUCES_TRASERAS (1<<6)
@@ -82,18 +102,6 @@
 #define C (1<<2)
 #define D (1<<1)
 #define E (1<<0)
-
-#define CTOUT1 1 //T_FIL1
-#define CTOUT1_PORT 4
-#define CTOUT1_PIN  1
-#define CTOUT1_FUNC FUNC1
-
-#define CTOUT3 3 //T_FIL3
-#define CTOUT3_PORT 4
-#define CTOUT3_PIN  3
-#define CTOUT3_FUNC FUNC1
-
-#define INIT_FREC 1000
 
 /* === Declaraciones de tipos de datos internos ============================ */
 /** @brief Estructura de datos para enviar y recibir datos
@@ -145,12 +153,20 @@ void EstadoAccesorios(uint8_t estado);
 void ApagarTodo(void);
 
 /* === Definiciones de variables internas ================================== */
+/** @brief Variable para la inicializacion del servo de la direccion */
+//	servo_t servo = SERVO1;
+
+/** @brief Variable para la inicializacion control por PWM de la traccion */
+//	pwm_out_t pwm = CTOUT3;
+
 /** @brief Información para la recepcion de datos por la uart */
 cola_t comando_recibido;
 
 /** @brief Descriptor del grupo de eventos */
 EventGroupHandle_t eventos;
 QueueHandle_t cola;
+
+uint32_t ticks_per_cycle;
 
 /* === Definiciones de variables externas ================================== */
 
@@ -162,7 +178,7 @@ void Decodificar(void * parametros)
 	EventBits_t bits;
 	cola_t * comando_recibido = parametros;
 	uint8_t comando_anterior[4] = {FRENAR, 0, ANGULO_CERO, 0};
-	vTaskSuspend(NULL);
+//	vTaskSuspend(NULL);
 	while(1)
 	{
 //		strcpy(comando_anterior, comando_recibido->comando);
@@ -173,8 +189,7 @@ void Decodificar(void * parametros)
 
 		if(bits == EVENTO_CADENA)
 		{
-			if(comando_recibido->comando[0] != comando_anterior[0])
-//			if(strcmp(comando_anterior, comando_recibido->comando))
+			if(comando_recibido->comando[0] != comando_anterior[0] || comando_recibido->comando[1] != comando_anterior[1])
 			{
 				if(comando_recibido->comando[0] <= FRENAR)
 					MotorTraccion(comando_recibido->comando[0], comando_recibido->comando[1]);
@@ -212,6 +227,8 @@ void RecibirComando(void * parametros)
 			comando_recibido->posicion++;
 			xQueueReceive(cola, &dato, pdMS_TO_TICKS(30000));
 			comando_recibido->comando[comando_recibido->posicion] = dato;
+			if(comando_recibido->comando[0]<0xf1 || comando_recibido->comando[0]>0xf5)
+				comando_recibido->posicion = 255;
 			if(comando_recibido->posicion == 3)
 				completando_comando = FALSE;
 		}
@@ -241,7 +258,7 @@ void Teclado(void * parametros)
 			switch(tecla)
 			{
 				case SWITCH_1:
-					vTaskResume(xTaskGetHandle("Decodificar"));
+//					vTaskResume(xTaskGetHandle("Decodificar"));
 					break;
 				case SWITCH_2:
 					break;
@@ -259,29 +276,39 @@ void Teclado(void * parametros)
 
 void MotorTraccion(uint8_t sentido, uint8_t velocidad)
 {
+	uint32_t ticks = (ticks_per_cycle*velocidad)/255;
 	if(sentido == ADELANTE)
 	{
-		LedOn(LED_3);
-		LedOff(LED_1);
-		LedOff(LED_2);
+		//	PWMSetDutyCycle(CTOUT3, velocidad);
+		Chip_SCTPWM_SetDutyCycle(LPC_SCT, CTOUT3+1, ticks);
+		GPIOOn(PIN_ADELANTE);
+		GPIOOff(PIN_ATRAS);
+		LedsMask(LED_3);
 	}
 	if(sentido == ATRAS)
 	{
-		LedOn(LED_1);
-		LedOff(LED_3);
-		LedOff(LED_2);
+		//	PWMSetDutyCycle(CTOUT3, velocidad);
+		Chip_SCTPWM_SetDutyCycle(LPC_SCT, CTOUT3+1, ticks);
+		GPIOOn(PIN_ATRAS);
+		GPIOOff(PIN_ADELANTE);
+		LedsMask(LED_1);
 	}
 	if(sentido == FRENAR)
 	{
-		LedOn(LED_2);
-		LedOff(LED_1);
-		LedOff(LED_3);
+		//	PWMSetDutyCycle(CTOUT3, 0);
+		Chip_SCTPWM_SetDutyCycle(LPC_SCT, CTOUT3+1, 0);
+		GPIOOff(PIN_ADELANTE);
+		GPIOOff(PIN_ATRAS);
+		LedsMask(LED_2);
 	}
 
 }
 
 void MotorDireccion(uint8_t angulo)
 {
+	uint32_t ticks = (ticks_per_cycle*10)/angulo;
+	Chip_SCTPWM_SetDutyCycle(LPC_SCT, CTOUT1+1, ticks);
+//	ServoAngle(&servo, angulo); //Cambiar en APP
 	if(angulo < ANGULO_CERO)
 	{
 		LedOn(LED_RGB_G);
@@ -304,14 +331,17 @@ void MotorDireccion(uint8_t angulo)
 
 void EstadoAccesorios(uint8_t estado)
 {
-	if(estado & BOCINA)
-	{
-		LedToggle(LED_2);
-	}
+	GPIOState(PIN_BOCINA, (estado&BOCINA));
 }
 
 void ApagarTodo(void)
 {
+//	ServoAngle(&servo, ANGULO_CERO);
+	Chip_SCTPWM_SetDutyCycle(LPC_SCT, CTOUT1+1, (ticks_per_cycle*10)/ANGULO_CERO);
+//	PWMSetDutyCycle(CTOUT3, 0);
+	Chip_SCTPWM_SetDutyCycle(LPC_SCT, CTOUT3+1, 0);
+	GPIOOn(PIN_ATRAS);
+	GPIOOn(PIN_ADELANTE);
 	LedsOffAll();
 }
 
@@ -329,8 +359,25 @@ int main(void)
 	/* Inicializaciones y configuraciones de dispositivos */
 	LedsInit();
 	SwitchesInit();
+	GPIOInit(PIN_ADELANTE, GPIO_OUTPUT);
+	GPIOInit(PIN_ATRAS, GPIO_OUTPUT);
+	GPIOInit(PIN_BOCINA, GPIO_OUTPUT);
 	UARTInit(UART_RS232);
 	UARTActivInt(UART_RS232, IntRecepcion);
+//	ServoInit(&servo, 1);
+//	ServoAngle(&servo, ANGULO_CERO);
+//	PWMInit(&pwm, 1, PWM_FREC);
+//	PWMSetDutyCycle(CTOUT3, 0);
+	Chip_SCTPWM_Init(LPC_SCT);
+	Chip_SCTPWM_SetRate(LPC_SCT, INIT_FREC);
+	Chip_SCU_PinMux(CTOUT1_PORT , CTOUT1_PIN , SCU_MODE_INACT , CTOUT1_FUNC);
+	Chip_SCU_PinMux(CTOUT3_PORT , CTOUT3_PIN , SCU_MODE_INACT , CTOUT3_FUNC);
+	Chip_SCTPWM_SetOutPin(LPC_SCT, CTOUT1+1 , CTOUT1);
+	Chip_SCTPWM_SetOutPin(LPC_SCT, CTOUT3+1 , CTOUT3);
+	ticks_per_cycle = Chip_SCTPWM_GetTicksPerCycle(LPC_SCT);
+	Chip_SCTPWM_SetDutyCycle(LPC_SCT, CTOUT1+1, (ticks_per_cycle/15));
+	Chip_SCTPWM_SetDutyCycle(LPC_SCT, CTOUT3+1, 0);
+	Chip_SCTPWM_Start(LPC_SCT);
 
 	/* Creación del grupo de eventos */
 	eventos = xEventGroupCreate();
