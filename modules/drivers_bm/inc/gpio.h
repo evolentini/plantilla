@@ -77,8 +77,8 @@ typedef enum {
 	GPIO1, /**< Mapeo GPIO5[14] en P4_10 */
 	GPIO3, /**< Mapeo GPIO5[14] en P4_10 */
 	GPIO5, /**< Mapeo GPIO5[14] en P4_10 */
-	LCD_RS, /**< Mapeo GPIO5[13] en P4_9 */
-	LCD_EN, /**< Mapeo GPIO5[12] en P4_8 */
+	LCDRS, /**< Mapeo GPIO5[13] en P4_9 */
+	LCDEN, /**< Mapeo GPIO5[12] en P4_8 */
 	T_COL0, /**< Mapeo GPIO1[8] en P1_5 */
 	T_FIL0, /**< Mapeo GPIO2[2] en P4_2 */
 	T_FIL2, /**< Mapeo GPIO2[2] en P4_2 */

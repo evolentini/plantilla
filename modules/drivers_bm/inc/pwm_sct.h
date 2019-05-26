@@ -34,8 +34,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#ifndef BUZZER_H
-#define BUZZER_H
+#ifndef PWM_SCT_H
+#define PWM_SCT_H
 
 
 /*==================[inclusions]=============================================*/
@@ -43,36 +43,54 @@
 #include <stdint.h>
 
 /*==================[macros]=================================================*/
-#define lpc4337            1
-#define mk60fx512vlq15     2
 
 /*==================[typedef]================================================*/
-
+typedef enum
+{
+	CTOUT0 = 0,
+	CTOUT1,
+	CTOUT2,
+	CTOUT3
+}pwm_out_t;
 /*==================[external data declaration]==============================*/
 
 
 /*==================[external functions declaration]=========================*/
 
-/** \brief Initialization function
- ** 
- ** \return TRUE if no error
+/** @brief Initialization function
+ ** param[in] ctout vector with the outputs pin
+ ** param[in] n_outs number of outputs
+ ** param[in] freq Frequency of ALL PWM outputs
+ ** @return TRUE if no error
  **/
-uint8_t BuzzerInit(void);
+bool PWMInit(pwm_out_t * ctout, uint8_t n_outs, uint16_t freq);
 
-
-/** \brief Function to turn on buzzer
+/** @brief Function to turn on PWM outputs
  **/
-void BuzzerOn(void);
+void PWMOn(void);
 
-/** \brief Function to turn off buzzer
+/** @brief Function to turn off PWM outputs
  **/
-void BuzzerOff(void);
+void PWMOff(void);
 
-/** \brief Function to turn off buzzer
- ** param[in] freq Frequency of tone of the buzzer
+/** @brief Function to change PWM duty cycle of an output
+ ** param[in] ctout Output pin
+ ** param[in] duty_cycle Duty cycle of PWM
+ ** @return TRUE if no error
  **/
-void BuzzerSetFrec(uint16_t freq);
+bool PWMSetDutyCycle(pwm_out_t ctout, uint8_t duty_cycle);
+
+/** @brief Function to set freq of all PWM outputs
+ ** param[in] freq Frequency of PWM
+ ** @return TRUE if no error
+ **/
+bool PWMSetFreq(uint16_t freq);
+
+/** @brief Function to turn off PWM
+ ** @return TRUE if no error
+ **/
+bool PWMDeinit(void);
 
 /*==================[end of file]============================================*/
-#endif /* #ifndef BUZZER_H */
+#endif /* #ifndef PWM_SCT_H */
 

@@ -34,8 +34,8 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#ifndef BUZZER_H
-#define BUZZER_H
+#ifndef SERVO_H
+#define SERVO_H
 
 
 /*==================[inclusions]=============================================*/
@@ -47,32 +47,38 @@
 #define mk60fx512vlq15     2
 
 /*==================[typedef]================================================*/
+typedef enum
+{
+	SERVO0 = 0, /*< Conected to CTOUT0*/
+	SERVO1,	/*< Conected to CTOUT1*/
+	SERVO2,	/*< Conected to CTOUT2*/
+	SERVO3	/*< Conected to CTOUT3*/
+}servo_t;
 
 /*==================[external data declaration]==============================*/
 
 
 /*==================[external functions declaration]=========================*/
 
-/** \brief Initialization function
+/** @brief Initialization function
  ** 
- ** \return TRUE if no error
+ ** @eturn TRUE if no error
  **/
-uint8_t BuzzerInit(void);
+bool ServoInit(servo_t * servos, uint8_t n_servos);
 
-
-/** \brief Function to turn on buzzer
+/** @brief Function to change angle of a servo
+ ** param[in] servo Output servo
+ ** param[in] angle Angle to set between 0 and 180 degrees
+ ** @return TRUE if no error
  **/
-void BuzzerOn(void);
+bool ServoAngle(servo_t servo, uint8_t angle);
 
-/** \brief Function to turn off buzzer
+/** @brief Function to deactivate servos
+ ** @return TRUE if no error
  **/
-void BuzzerOff(void);
+bool ServoDeinit(void);
 
-/** \brief Function to turn off buzzer
- ** param[in] freq Frequency of tone of the buzzer
- **/
-void BuzzerSetFrec(uint16_t freq);
 
 /*==================[end of file]============================================*/
-#endif /* #ifndef BUZZER_H */
+#endif /* #ifndef SERVO_H */
 

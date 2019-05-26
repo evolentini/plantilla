@@ -1,4 +1,4 @@
-/* Copyright 2019,
+	/* Copyright 2019,
  * Sebastian Mateos
  * smateos@ingenieria.uner.edu.ar
  * Facultad de Ingeniería
@@ -34,45 +34,66 @@
  * POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#ifndef BUZZER_H
-#define BUZZER_H
 
+/** \brief Bare Metal driver for buzzer in the EDU-CIAA board.
+ **
+ **/
+
+/*
+ * Initials     Name
+ * ---------------------------
+ * SM		Sebastian Mateos
+ */
+
+/*
+ * modification history (new versions first)
+ * -----------------------------------------------------------
+ * 20190520 v0.1 SM initial version
+ */
 
 /*==================[inclusions]=============================================*/
-#include "bool.h"
-#include <stdint.h>
+#include "servo.h"
+#include "pwm_sct.h"
 
-/*==================[macros]=================================================*/
-#define lpc4337            1
-#define mk60fx512vlq15     2
+/*==================[macros and definitions]=================================*/
+#define SERVO_FREC 50
 
-/*==================[typedef]================================================*/
+/*==================[internal data declaration]==============================*/
 
-/*==================[external data declaration]==============================*/
+/*==================[internal functions declaration]=========================*/
 
+/*==================[internal data definition]===============================*/
 
-/*==================[external functions declaration]=========================*/
+/*==================[external data definition]===============================*/
 
-/** \brief Initialization function
- ** 
- ** \return TRUE if no error
- **/
-uint8_t BuzzerInit(void);
+/*==================[internal functions definition]==========================*/
 
 
-/** \brief Function to turn on buzzer
- **/
-void BuzzerOn(void);
+/*==================[external functions definition]==========================*/
+bool ServoInit(servo_t * servos, uint8_t n_servos)
+{
+	bool init;
+	uint8_t i;
+	init = PWMInit((pwm_out_t*)servos, n_servos, SERVO_FREC);
+	for(i=0 ; i<n_servos ; i++)
+		PWMSetDutyCycle(servos[i], 10);
+	return init;
+}
 
-/** \brief Function to turn off buzzer
- **/
-void BuzzerOff(void);
+bool ServoAngle(servo_t servo, uint8_t angle)
+{
+	if(angle<180)
+	{
+		PWMSetDutyCycle(servo, (angle/36+5));
+		return true;
+	}
+	else
+		return false;
+}
 
-/** \brief Function to turn off buzzer
- ** param[in] freq Frequency of tone of the buzzer
- **/
-void BuzzerSetFrec(uint16_t freq);
+bool ServoDeinit(void)
+{
+	return PWMDeinit();
+}
 
 /*==================[end of file]============================================*/
-#endif /* #ifndef BUZZER_H */
-
