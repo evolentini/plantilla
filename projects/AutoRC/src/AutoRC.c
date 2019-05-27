@@ -34,20 +34,83 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** @file blinking.c
+/** @mainpage Proyecto Final - Sistemas Operativos de Tiempo Real
  **
- ** @brief Ejemplo de un led parpadeando
+ ** @section genDesc Descripción General
  **
- ** Ejemplo de un led parpadeando utilizando la capa de abstraccion de 
- ** hardware y sin sistemas operativos.
+ ** El presente proyecto, se realizo como finalizacion del modulo 4.
+ ** El mismo consistía en la implementación de un sistema de tiempo real basado en FreeRtos, 
+ ** donde teníamos que aplicar los los conocimientos de este modulo y complementar usando los drivers hechos en los módulos anteriores.
+ **
+ ** # -- Auto RC -- #
+ ** El proyecto se basa en manejar un auto a radio control, por medio de un enlace Bluetooth.
  ** 
+ ** Se utlizaron los siguientes acciones del sistema operativo FreeRtos:
+ ** + vTaskStartScheduler
+ ** + xTaskCreate
+ ** + xEventGroupWaitBits
+ ** + vTaskSuspend
+ ** + vTaskResume
+ **  
+ ** @subsection Comando 
+ ** Se utilizo una aplicación disponible en el google play store:
+ ** 
+ ** <a href="https://play.google.com/store/apps/details?id=com.andico.control.joystick&hl=es_AR"> Arduino Joystick Controller </a> 
+ **
+ ** La aplicación manda los siguientes comandos cada 50 ms:
+ ** 
+ ** | Comando |  Descripción   |
+ ** |---------|----------------|
+ ** |    1    |  Modo	       |
+ ** |    2    |  Velocidad     |
+ ** |    3    |  Angulo	       |
+ ** |    4    |  Accesorios    |
+ **
+ ** @subsection Auto
+ ** 
+ ** ### Hardware utilizado: ###
+ ** + Ciaa nxp
+ ** + Puente H pasado en L298n
+ ** + Pack de baterías 18650 ( 12v -2200mha)
+ ** + Servo MG996
+ ** + HC-05 (bluetooth)
+ ** + Chasis de camioneta 4x4 con motor de 12v para la tracción
+ **
+ ** ### Software: ###
+ **
+ ** La aplicación espera los datos mandados desde el Comando, estos son adquiridos por el modulo HC-05, el cual los trasfiere a las Ciaa mediante el puerto uart a 9600 baudios
+ ** La Ciaa guarda los comandos mediante la tarea de recepcion hasta que adquiere los 4 bloques de datos. 
+ ** Después se analizan y verifican los mismos para proceder a realizar la acción correspondiente o en caso contrario se descartan.
+ ** Las acciones son:
+ ** + Cambio de sentido de la traccion, segun el comando 1. esto se realiza cambiando los Gpios que se conectan con el modulo L298n
+ ** + Cambio de velocidad, para esto modificamos el ducty del pwm 1, basandonos en el valor del comando 2
+ ** + Cambio direccion, mediante la lectura del comando 3 se modifica el ducty del pwm 2
+ ** + Bocina, se conecto a la segunda salida del L298n, y es accionada mediante el cambio de los un puerto Gpio
+ **
+ ** Para el desarrollo se utilizaron 2 tareas:
+ ** + Recepción de datos, la cual adquiere los datos mediante la UART y los almacena en una cola.
+ ** + Decodificación es quien verifica dichos datos para tomar la acción correspondiente a los mismos, a su vez realiza un control de los tiempos de trasmisión, 
+ ** ya que si se pierde la conexión con el comando este debe frenar el auto para que no colisione contra algún objeto.
+ **
+ **
+ ** @image html Diagrama.png "Diagrama de secuencia" width=1024px
+ ** 
+ */
+
+
+/** @file AutoRc.c
+ **
+ ** @brief Proyecto Final Moduolo 4
+ **
  ** | RV | YYYY.MM.DD | Autor       | Descripción de los cambios              |
  ** |----|------------|-------------|-----------------------------------------|
+ ** |  4 | 2017.10.27 | fcipriani   | Documentacion doxygen		      |
+ ** |  3 | 2017.10.25 | Sebamat     | Desarrollo de la app		      |
  ** |  2 | 2017.10.16 | evolentini  | Correción en el formato del archivo     |
  ** |  1 | 2017.09.21 | evolentini  | Version inicial del archivo             |
  ** 
  ** @defgroup ejemplos Proyectos de ejemplo
- ** @brief Proyectos de ejemplo de la Especialización en Sistemas Embebidos
+ ** @brief Proyecto de Fianlizacion de el modulo 4 de la Especialización en Sistemas Embebidos
  ** @{ 
  */
 
@@ -116,39 +179,60 @@ typedef struct
 } cola_t;
 
 /* === Declaraciones de funciones internas ================================= */
-/** @brief Función que decodifica un dato recibido por UART y realiza una accion
+
+/** @fn void Decodificar(void * parametros);
+ ** @brief Función que decodifica un dato recibido por UART y realiza una accion
  **
  ** @parameter[in] parametros Puntero a una cadena que contiene el led a prender
+ ** @return void
  */
 void Decodificar(void * parametros);
 
-/** @brief Función que decodifica un dato recibido por UART y realiza una accion
+/** @fn void RecibirComando(void * parametros);
+ ** @brief Función que decodifica un dato recibido por UART y realiza una accion
  ** 
  ** @parameter[in] parametros Puntero a una cadena que contiene el led a prender
+ ** @return NULL
  */
 void RecibirComando(void * parametros);
 
-/** @brief Función que implementa la funcion de interrupcion de recepcion de la UART
+
+/** @fn void IntRecepcion(void);
+ ** @brief Función que implementa la funcion de interrupcion de recepcion de la UART
+ ** @return NULL
  */
 void IntRecepcion(void);
 
-/** @brief Función que lee las teclas y activa la decodificacion con la tecla 1
+/** @fn void Teclado(void * parametros);
+ ** @brief Función que lee las teclas y activa la decodificacion con la tecla 1
+ ** @return NULL
  */ 
 void Teclado(void * parametros);
 
-/** @brief Función que cambia el estado del motor de traccion
+/** @fn void MotorTraccion(uint8_t sentido, uint8_t velocidad);
+ ** @brief Función que cambia el estado del motor de traccion
+ ** @parameter[in] sentido Adelelante o hacia Atras
+ ** @parameter[in] velocidad Valor del pwm (ducty)
+ ** @return NULL
  */
 void MotorTraccion(uint8_t sentido, uint8_t velocidad);
 
-/** @brief Función que cambia el estado del motor de direccion
+/** @fn void MotorDireccion(uint8_t angulo);
+ ** @brief Función que cambia el estado del motor de direccion
+ ** @parameter[in] angulo Valor del pwm (ducty)
+ ** @return NULL
  */
 void MotorDireccion(uint8_t angulo);
 
-/** @brief Función que cambia el estado de los accesorios del auto
+/** @fn void EstadoAccesorios(uint8_t estado);
+ ** @brief Función que cambia el estado de los accesorios del auto
+ ** @return NULL
  */
 void EstadoAccesorios(uint8_t estado);
 
-/** @brief Función que apaga ambos motores, luces y demas funciones
+/** @fn void ApagarTodo(void);
+ ** @brief Función que apaga ambos motores, luces y demas funciones
+ ** @return NULL
  */
 void ApagarTodo(void);
 
@@ -172,7 +256,7 @@ uint32_t ticks_per_cycle;
 
 /* === Definiciones de funciones internas ================================== */
 
-void Decodificar(void * parametros)
+void decodificar(void * parametros)
 {
 	uint8_t i;
 	EventBits_t bits;
@@ -347,7 +431,8 @@ void ApagarTodo(void)
 
 /* === Definiciones de funciones externas ================================== */
 
-/** @brief Función principal del programa
+/** \fn
+ ** @brief Función principal del programa
  **
  ** @returns 0 La función nunca debería termina
  **

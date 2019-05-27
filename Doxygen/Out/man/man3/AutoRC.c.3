@@ -1,0 +1,200 @@
+.TH "/home/cipri8/Repositorios/ese_c4/Plantilla-AutoRC/projects/AutoRC/src/AutoRC.c" 3 "Mon May 27 2019" "Auto Rc" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+/home/cipri8/Repositorios/ese_c4/Plantilla-AutoRC/projects/AutoRC/src/AutoRC.c \- Proyecto Final Moduolo 4\&.  
+
+.SH SYNOPSIS
+.br
+.PP
+\fC#include 'FreeRTOS\&.h'\fP
+.br
+\fC#include 'task\&.h'\fP
+.br
+\fC#include 'unt\&.h'\fP
+.br
+\fC#include 'soc\&.h'\fP
+.br
+\fC#include 'event_groups\&.h'\fP
+.br
+\fC#include 'queue\&.h'\fP
+.br
+\fC#include 'led\&.h'\fP
+.br
+\fC#include 'switch\&.h'\fP
+.br
+\fC#include 'gpio\&.h'\fP
+.br
+\fC#include 'uart\&.h'\fP
+.br
+\fC#include 'pwm_sct\&.h'\fP
+.br
+\fC#include 'servo\&.h'\fP
+.br
+\fC#include <string\&.h>\fP
+.br
+
+.SS "Data Structures"
+
+.in +1c
+.ti -1c
+.RI "struct \fBcola_t\fP"
+.br
+.RI "Estructura de datos para enviar y recibir datos\&. "
+.in -1c
+.SS "Macros"
+
+.in +1c
+.ti -1c
+.RI "#define \fBEVENTO_CARACTER\fP   (1 << 0)"
+.br
+.ti -1c
+.RI "#define \fBEVENTO_CADENA\fP   (1 << 1)"
+.br
+.ti -1c
+.RI "#define \fBPIN_ADELANTE\fP   T_FIL2"
+.br
+.ti -1c
+.RI "#define \fBPIN_ATRAS\fP   T_COL0"
+.br
+.ti -1c
+.RI "#define \fBPIN_BOCINA\fP   LCD2"
+.br
+.ti -1c
+.RI "#define \fBCTOUT1\fP   1"
+.br
+.ti -1c
+.RI "#define \fBCTOUT1_PORT\fP   4"
+.br
+.ti -1c
+.RI "#define \fBCTOUT1_PIN\fP   1"
+.br
+.ti -1c
+.RI "#define \fBCTOUT1_FUNC\fP   FUNC1"
+.br
+.ti -1c
+.RI "#define \fBCTOUT3\fP   3"
+.br
+.ti -1c
+.RI "#define \fBCTOUT3_PORT\fP   4"
+.br
+.ti -1c
+.RI "#define \fBCTOUT3_PIN\fP   3"
+.br
+.ti -1c
+.RI "#define \fBCTOUT3_FUNC\fP   FUNC1"
+.br
+.ti -1c
+.RI "#define \fBINIT_FREC\fP   50"
+.br
+.ti -1c
+.RI "#define \fBADELANTE\fP   0xF1"
+.br
+.ti -1c
+.RI "#define \fBATRAS\fP   0xF2"
+.br
+.ti -1c
+.RI "#define \fBFRENAR\fP   0xF3"
+.br
+.ti -1c
+.RI "#define \fBCABEZAL\fP   0xF4"
+.br
+.ti -1c
+.RI "#define \fBAPAGAR_TODO\fP   0xF5"
+.br
+.ti -1c
+.RI "#define \fBANGULO_CERO\fP   150"
+.br
+.ti -1c
+.RI "#define \fBLUCES_DELANTERAS\fP   (1<<7)"
+.br
+.ti -1c
+.RI "#define \fBLUCES_TRASERAS\fP   (1<<6)"
+.br
+.ti -1c
+.RI "#define \fBBOCINA\fP   (1<<5)"
+.br
+.ti -1c
+.RI "#define \fBA\fP   (1<<4)"
+.br
+.ti -1c
+.RI "#define \fBB\fP   (1<<3)"
+.br
+.ti -1c
+.RI "#define \fBC\fP   (1<<2)"
+.br
+.ti -1c
+.RI "#define \fBD\fP   (1<<1)"
+.br
+.ti -1c
+.RI "#define \fBE\fP   (1<<0)"
+.br
+.in -1c
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "void \fBDecodificar\fP (void *parametros)"
+.br
+.RI "Función que decodifica un dato recibido por UART y realiza una accion\&. "
+.ti -1c
+.RI "void \fBRecibirComando\fP (void *parametros)"
+.br
+.RI "Función que decodifica un dato recibido por UART y realiza una accion\&. "
+.ti -1c
+.RI "void \fBIntRecepcion\fP (void)"
+.br
+.RI "Función que implementa la funcion de interrupcion de recepcion de la UART\&. "
+.ti -1c
+.RI "void \fBTeclado\fP (void *parametros)"
+.br
+.RI "Función que lee las teclas y activa la decodificacion con la tecla 1\&. "
+.ti -1c
+.RI "void \fBMotorTraccion\fP (uint8_t sentido, uint8_t velocidad)"
+.br
+.RI "Función que cambia el estado del motor de traccion [in] sentido Adelelante o hacia Atras [in] velocidad Valor del pwm (ducty) "
+.ti -1c
+.RI "void \fBMotorDireccion\fP (uint8_t angulo)"
+.br
+.RI "Función que cambia el estado del motor de direccion [in] angulo Valor del pwm (ducty) "
+.ti -1c
+.RI "void \fBEstadoAccesorios\fP (uint8_t estado)"
+.br
+.RI "Función que cambia el estado de los accesorios del auto\&. "
+.ti -1c
+.RI "void \fBApagarTodo\fP (void)"
+.br
+.RI "Función que apaga ambos motores, luces y demas funciones\&. "
+.ti -1c
+.RI "void \fBdecodificar\fP (void *parametros)"
+.br
+.ti -1c
+.RI "int \fBmain\fP (void)"
+.br
+.in -1c
+.SS "Variables"
+
+.in +1c
+.ti -1c
+.RI "\fBcola_t\fP \fBcomando_recibido\fP"
+.br
+.RI "Variable para la inicializacion del servo de la direccion\&. "
+.ti -1c
+.RI "EventGroupHandle_t \fBeventos\fP"
+.br
+.RI "Descriptor del grupo de eventos\&. "
+.ti -1c
+.RI "QueueHandle_t \fBcola\fP"
+.br
+.ti -1c
+.RI "uint32_t \fBticks_per_cycle\fP"
+.br
+.in -1c
+.SH "Detailed Description"
+.PP 
+Proyecto Final Moduolo 4\&. 
+
+RV YYYY\&.MM\&.DD Autor Descripción de los cambios  4 2017\&.10\&.27 fcipriani Documentacion doxygen 3 2017\&.10\&.25 Sebamat Desarrollo de la app 2 2017\&.10\&.16 evolentini Correción en el formato del archivo 1 2017\&.09\&.21 evolentini Version inicial del archivo 
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for Auto Rc from the source code\&.
