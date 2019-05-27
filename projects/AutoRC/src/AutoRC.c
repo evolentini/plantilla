@@ -86,6 +86,8 @@
  ** + Cambio de velocidad, para esto modificamos el ducty del pwm 1, basandonos en el valor del comando 2
  ** + Cambio direccion, mediante la lectura del comando 3 se modifica el ducty del pwm 2
  ** + Bocina, se conecto a la segunda salida del L298n, y es accionada mediante el cambio de los un puerto Gpio
+ ** 
+ ** @image html AutoRF2.png "Diagrama" width=1024px
  **
  ** Para el desarrollo se utilizaron 2 tareas:
  ** + Recepción de datos, la cual adquiere los datos mediante la UART y los almacena en una cola.

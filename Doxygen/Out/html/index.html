@@ -130,6 +130,10 @@ Auto</h2>
 <li>Cambio direccion, mediante la lectura del comando 3 se modifica el ducty del pwm 2</li>
 <li>Bocina, se conecto a la segunda salida del L298n, y es accionada mediante el cambio de los un puerto Gpio</li>
 </ul>
+<div class="image">
+<img src="AutoRF2.png" alt="AutoRF2.png" width="1024px"/>
+<div class="caption">
+Diagrama</div></div>
 <p>Para el desarrollo se utilizaron 2 tareas:</p><ul>
 <li>Recepción de datos, la cual adquiere los datos mediante la UART y los almacena en una cola.</li>
 <li>Decodificación es quien verifica dichos datos para tomar la acción correspondiente a los mismos, a su vez realiza un control de los tiempos de trasmisión, ya que si se pierde la conexión con el comando este debe frenar el auto para que no colisione contra algún objeto.</li>
