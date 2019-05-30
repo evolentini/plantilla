@@ -315,13 +315,15 @@ uint8_t LedsOffAll(void)
  */
 void LedsMask(uint8_t mask)
 {
-	/** \details Function to turn on or off leds from a mask.
-		 * 	\params uint8_t mask: a mask where the first bit represents LED 1, the second bit LED 2 and so on
-		 */
-	Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED1_GPIO_PORT, LED1_GPIO_PIN, (mask & (1<<0))>>0);
-	Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED2_GPIO_PORT, LED2_GPIO_PIN, (mask & (1<<1))>>1);
-	Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED3_GPIO_PORT, LED3_GPIO_PIN, (mask & (1<<2))>>2);
-	Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED_RGB_B_GPIO_PORT, LED_RGB_B_GPIO_PIN, (mask & (1<<3))>>3);
+	/**@details Function to turn on or off leds from a mask.
+	* 	@params uint8_t mask: a mask where the first bit represents LED 1, the second bit LED 2 and so on
+	*/
+	Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED1_GPIO_PORT, LED1_GPIO_PIN, (mask & LED_1));
+	Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED2_GPIO_PORT, LED2_GPIO_PIN, (mask & LED_2));
+	Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED3_GPIO_PORT, LED3_GPIO_PIN, (mask & LED_3));
+	Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED_RGB_B_GPIO_PORT, LED_RGB_B_GPIO_PIN, (mask & LED_RGB_B));
+	Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED_RGB_G_GPIO_PORT, LED_RGB_G_GPIO_PIN, (mask & LED_RGB_G));
+	Chip_GPIO_SetPinState(LPC_GPIO_PORT, LED_RGB_R_GPIO_PORT, LED_RGB_R_GPIO_PIN, (mask & LED_RGB_R));
 }
 
 /*==================[end of file]============================================*/

@@ -58,7 +58,14 @@
 /** \brief Definition of constants to reference the EDU-CIAA leds.
  **
  **/
-enum LED_COLOR {LED_RGB_R=1, LED_RGB_G=2, LED_RGB_B=4, LED_1=8, LED_2=16,  LED_3=32};
+enum LED_COLOR {
+	LED_1 = 1,
+	LED_2 = 2,
+	LED_3 = 4,
+	LED_RGB_B = 8,
+	LED_RGB_G = 16,
+	LED_RGB_R = 32
+};
 
 
 /** \brief Definition of constants to control the EDU-CIAA leds.

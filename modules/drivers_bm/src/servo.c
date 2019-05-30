@@ -77,6 +77,7 @@ bool ServoInit(servo_t * servos, uint8_t n_servos)
 	init = PWMInit((pwm_out_t*)servos, n_servos, SERVO_FREC);
 	for(i=0 ; i<n_servos ; i++)
 		PWMSetDutyCycle(servos[i], 10);
+	PWMOn();
 	return init;
 }
 
