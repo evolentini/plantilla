@@ -1,0 +1,70 @@
+\section{Descripción General}\label{index_genDesc}
+El presente proyecto, se realizo como finalizacion del modulo 4. El mismo consistía en la implementación de un sistema de tiempo real basado en Free\+Rtos, donde teníamos que aplicar los los conocimientos de este modulo y complementar usando los drivers hechos en los módulos anteriores.
+
+\section*{-- Auto RC --}
+
+El proyecto se basa en manejar un auto a radio control, por medio de un enlace Bluetooth.
+
+{\tt Video de funcionamiento }
+
+Se utlizaron los siguientes acciones del sistema operativo Free\+Rtos\+:
+\begin{DoxyItemize}
+\item v\+Task\+Start\+Scheduler
+\item x\+Task\+Create
+\item x\+Event\+Group\+Wait\+Bits
+\item v\+Task\+Suspend
+\item v\+Task\+Resume
+\end{DoxyItemize}\subsection{Comando}\label{index_Comando}
+Se utilizo una aplicación disponible en el google play store\+:
+
+{\tt Arduino Joystick Controller }
+
+La aplicación manda los siguientes comandos cada 50 ms\+:
+
+\tabulinesep=1mm
+\begin{longtabu} spread 0pt [c]{*{2}{|X[-1]}|}
+\hline
+\rowcolor{\tableheadbgcolor}\textbf{ Comando  }&\textbf{ Descripción   }\\\cline{1-2}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\rowcolor{\tableheadbgcolor}\textbf{ Comando  }&\textbf{ Descripción   }\\\cline{1-2}
+\endhead
+1  &Modo   \\\cline{1-2}
+2  &Velocidad   \\\cline{1-2}
+3  &Angulo   \\\cline{1-2}
+4  &Accesorios   \\\cline{1-2}
+\end{longtabu}
+\subsection{Auto}\label{index_Auto}
+\subsubsection*{Hardware utilizado\+:}
+
+
+\begin{DoxyItemize}
+\item Ciaa nxp
+\item Puente H pasado en L298n
+\item Pack de baterías 18650 ( 12v -\/2200mha)
+\item Servo M\+G996
+\item H\+C-\/05 (bluetooth)
+\item Chasis de camioneta 4x4 con motor de 12v para la tracción
+\end{DoxyItemize}
+
+\subsubsection*{Software\+:}
+
+La aplicación espera los datos mandados desde el Comando, estos son adquiridos por el modulo H\+C-\/05, el cual los trasfiere a las Ciaa mediante el puerto uart a 9600 baudios La Ciaa guarda los comandos mediante la tarea de recepcion hasta que adquiere los 4 bloques de datos. Después se analizan y verifican los mismos para proceder a realizar la acción correspondiente o en caso contrario se descartan. Las acciones son\+:
+\begin{DoxyItemize}
+\item Cambio de sentido de la traccion, segun el comando 1. esto se realiza cambiando los Gpios que se conectan con el modulo L298n
+\item Cambio de velocidad, para esto modificamos el ducty del pwm 1, basandonos en el valor del comando 2
+\item Cambio direccion, mediante la lectura del comando 3 se modifica el ducty del pwm 2
+\item Bocina, se conecto a la segunda salida del L298n, y es accionada mediante el cambio de los un puerto Gpio
+\end{DoxyItemize}
+
+
+
+Para el desarrollo se utilizaron 2 tareas\+:
+\begin{DoxyItemize}
+\item Recepción de datos, la cual adquiere los datos mediante la U\+A\+RT y los almacena en una cola.
+\item Decodificación es quien verifica dichos datos para tomar la acción correspondiente a los mismos, a su vez realiza un control de los tiempos de trasmisión, ya que si se pierde la conexión con el comando este debe frenar el auto para que no colisione contra algún objeto.
+\end{DoxyItemize}
+
+ 

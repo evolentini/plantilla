@@ -45,6 +45,8 @@
  ** # -- Auto RC -- #
  ** El proyecto se basa en manejar un auto a radio control, por medio de un enlace Bluetooth.
  ** 
+ **  <a href="https://youtu.be/N89mtLFhpj4"> Video de funcionamiento </a>
+ **
  ** Se utlizaron los siguientes acciones del sistema operativo FreeRtos:
  ** + vTaskStartScheduler
  ** + xTaskCreate
@@ -138,26 +140,14 @@
 #define PIN_ADELANTE T_FIL2
 #define PIN_ATRAS    T_COL0
 #define PIN_BOCINA   LCD2
-
-#define CTOUT1 1
-#define CTOUT1_PORT 4
-#define CTOUT1_PIN  1
-#define CTOUT1_FUNC FUNC1
-
-#define CTOUT3 3
-#define CTOUT3_PORT 4
-#define CTOUT3_PIN  3
-#define CTOUT3_FUNC FUNC1
-
-#define INIT_FREC 50
+#define PWM_FREC 50
 
 #define ADELANTE 0xF1
 #define ATRAS 0xF2
 #define FRENAR 0xF3
 #define CABEZAL 0xF4
 #define APAGAR_TODO 0xF5
-//#define ANGULO_CERO 90
-#define ANGULO_CERO 150
+#define ANGULO_CERO 90
 
 #define LUCES_DELANTERAS (1<<7)
 #define LUCES_TRASERAS (1<<6)
@@ -185,7 +175,7 @@ typedef struct
 /** @fn void Decodificar(void * parametros);
  ** @brief Función que decodifica un dato recibido por UART y realiza una accion
  **
- ** @parameter[in] parametros Puntero a una cadena que contiene el led a prender
+ ** @parameter[in] parametros Puntero a una cadena que contiene el comando recibido
  ** @return void
  */
 void Decodificar(void * parametros);
@@ -193,23 +183,16 @@ void Decodificar(void * parametros);
 /** @fn void RecibirComando(void * parametros);
  ** @brief Función que decodifica un dato recibido por UART y realiza una accion
  ** 
- ** @parameter[in] parametros Puntero a una cadena que contiene el led a prender
+ ** @parameter[in] parametros Puntero a una cadena que contiene el comando recibido
  ** @return NULL
  */
 void RecibirComando(void * parametros);
-
 
 /** @fn void IntRecepcion(void);
  ** @brief Función que implementa la funcion de interrupcion de recepcion de la UART
  ** @return NULL
  */
 void IntRecepcion(void);
-
-/** @fn void Teclado(void * parametros);
- ** @brief Función que lee las teclas y activa la decodificacion con la tecla 1
- ** @return NULL
- */ 
-void Teclado(void * parametros);
 
 /** @fn void MotorTraccion(uint8_t sentido, uint8_t velocidad);
  ** @brief Función que cambia el estado del motor de traccion
@@ -240,10 +223,10 @@ void ApagarTodo(void);
 
 /* === Definiciones de variables internas ================================== */
 /** @brief Variable para la inicializacion del servo de la direccion */
-//	servo_t servo = SERVO1;
+servo_t servo = SERVO1;
 
 /** @brief Variable para la inicializacion control por PWM de la traccion */
-//	pwm_out_t pwm = CTOUT3;
+pwm_out_t pwm_output = CTOUT3;
 
 /** @brief Información para la recepcion de datos por la uart */
 cola_t comando_recibido;
@@ -258,21 +241,19 @@ uint32_t ticks_per_cycle;
 
 /* === Definiciones de funciones internas ================================== */
 
-void decodificar(void * parametros)
+void Decodificar(void * parametros)
 {
 	uint8_t i;
 	EventBits_t bits;
 	cola_t * comando_recibido = parametros;
 	uint8_t comando_anterior[4] = {FRENAR, 0, ANGULO_CERO, 0};
-//	vTaskSuspend(NULL);
 	while(1)
 	{
-//		strcpy(comando_anterior, comando_recibido->comando);
 		for(i=0 ; i<4 ; i++)
 			comando_anterior[i] = comando_recibido->comando[i];
 		vTaskResume(xTaskGetHandle("RecibirComando"));
-		bits = xEventGroupWaitBits(eventos, EVENTO_CADENA, TRUE, FALSE, pdMS_TO_TICKS(30000));
-
+		bits = xEventGroupWaitBits(eventos, EVENTO_CADENA, TRUE, FALSE, pdMS_TO_TICKS(200));
+		/* Wait 200ms for a command*/
 		if(bits == EVENTO_CADENA)
 		{
 			if(comando_recibido->comando[0] != comando_anterior[0] || comando_recibido->comando[1] != comando_anterior[1])
@@ -290,7 +271,6 @@ void decodificar(void * parametros)
 					MotorDireccion(comando_recibido->comando[2]);
 				if(comando_recibido->comando[3] != comando_anterior[3])
 					EstadoAccesorios(comando_recibido->comando[3]);
-//			}
 		}
 		else
 			ApagarTodo();
@@ -311,7 +291,7 @@ void RecibirComando(void * parametros)
 		do
 		{
 			comando_recibido->posicion++;
-			xQueueReceive(cola, &dato, pdMS_TO_TICKS(30000));
+			xQueueReceive(cola, &dato, portMAX_DELAY);
 			comando_recibido->comando[comando_recibido->posicion] = dato;
 			if(comando_recibido->comando[0]<0xf1 || comando_recibido->comando[0]>0xf5)
 				comando_recibido->posicion = 255;
@@ -323,6 +303,7 @@ void RecibirComando(void * parametros)
 		xEventGroupSetBits(eventos, EVENTO_CADENA);
 	}
 }
+
 void IntRecepcion(void)
 {
 	char dato;
@@ -331,58 +312,27 @@ void IntRecepcion(void)
 	xQueueSendFromISR(cola, &dato, &xHigherPriorityTaskWoken);
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
-void Teclado(void * parametros)
-{
-	uint8_t tecla;
-	uint8_t anterior = 0;
-
-	while(1)
-	{
-		tecla = SwitchesRead();
-		if (tecla != anterior)
-		{
-			switch(tecla)
-			{
-				case SWITCH_1:
-//					vTaskResume(xTaskGetHandle("Decodificar"));
-					break;
-				case SWITCH_2:
-					break;
-				case SWITCH_3:
-					break;
-				case SWITCH_4:
-					break;
-			}
-			anterior = tecla;
-		}
-		vTaskDelay(100/ portTICK_PERIOD_MS);
-		LedToggle(LED_RGB_B);
-	}
-}
 
 void MotorTraccion(uint8_t sentido, uint8_t velocidad)
 {
 	uint32_t ticks = (ticks_per_cycle*velocidad)/255;
 	if(sentido == ADELANTE)
 	{
-		//	PWMSetDutyCycle(CTOUT3, velocidad);
-		Chip_SCTPWM_SetDutyCycle(LPC_SCT, CTOUT3+1, ticks);
+		PWMSetDutyCycle(pwm_output, velocidad);
 		GPIOOn(PIN_ADELANTE);
 		GPIOOff(PIN_ATRAS);
 		LedsMask(LED_3);
 	}
 	if(sentido == ATRAS)
 	{
-		//	PWMSetDutyCycle(CTOUT3, velocidad);
-		Chip_SCTPWM_SetDutyCycle(LPC_SCT, CTOUT3+1, ticks);
+		PWMSetDutyCycle(pwm_output, velocidad);
 		GPIOOn(PIN_ATRAS);
 		GPIOOff(PIN_ADELANTE);
 		LedsMask(LED_1);
 	}
 	if(sentido == FRENAR)
 	{
-		//	PWMSetDutyCycle(CTOUT3, 0);
-		Chip_SCTPWM_SetDutyCycle(LPC_SCT, CTOUT3+1, 0);
+		PWMSetDutyCycle(pwm_output, 0);
 		GPIOOff(PIN_ADELANTE);
 		GPIOOff(PIN_ATRAS);
 		LedsMask(LED_2);
@@ -392,9 +342,7 @@ void MotorTraccion(uint8_t sentido, uint8_t velocidad)
 
 void MotorDireccion(uint8_t angulo)
 {
-	uint32_t ticks = (ticks_per_cycle*10)/angulo;
-	Chip_SCTPWM_SetDutyCycle(LPC_SCT, CTOUT1+1, ticks);
-//	ServoAngle(&servo, angulo); //Cambiar en APP
+	ServoAngle(servo, angulo); //Cambiar en APP
 	if(angulo < ANGULO_CERO)
 	{
 		LedOn(LED_RGB_G);
@@ -422,10 +370,8 @@ void EstadoAccesorios(uint8_t estado)
 
 void ApagarTodo(void)
 {
-//	ServoAngle(&servo, ANGULO_CERO);
-	Chip_SCTPWM_SetDutyCycle(LPC_SCT, CTOUT1+1, (ticks_per_cycle*10)/ANGULO_CERO);
-//	PWMSetDutyCycle(CTOUT3, 0);
-	Chip_SCTPWM_SetDutyCycle(LPC_SCT, CTOUT3+1, 0);
+	ServoAngle(servo, ANGULO_CERO);
+	PWMSetDutyCycle(pwm_output, 0);
 	GPIOOn(PIN_ATRAS);
 	GPIOOn(PIN_ADELANTE);
 	LedsOffAll();
@@ -451,20 +397,11 @@ int main(void)
 	GPIOInit(PIN_BOCINA, GPIO_OUTPUT);
 	UARTInit(UART_RS232);
 	UARTActivInt(UART_RS232, IntRecepcion);
-//	ServoInit(&servo, 1);
-//	ServoAngle(&servo, ANGULO_CERO);
-//	PWMInit(&pwm, 1, PWM_FREC);
-//	PWMSetDutyCycle(CTOUT3, 0);
-	Chip_SCTPWM_Init(LPC_SCT);
-	Chip_SCTPWM_SetRate(LPC_SCT, INIT_FREC);
-	Chip_SCU_PinMux(CTOUT1_PORT , CTOUT1_PIN , SCU_MODE_INACT , CTOUT1_FUNC);
-	Chip_SCU_PinMux(CTOUT3_PORT , CTOUT3_PIN , SCU_MODE_INACT , CTOUT3_FUNC);
-	Chip_SCTPWM_SetOutPin(LPC_SCT, CTOUT1+1 , CTOUT1);
-	Chip_SCTPWM_SetOutPin(LPC_SCT, CTOUT3+1 , CTOUT3);
-	ticks_per_cycle = Chip_SCTPWM_GetTicksPerCycle(LPC_SCT);
-	Chip_SCTPWM_SetDutyCycle(LPC_SCT, CTOUT1+1, (ticks_per_cycle/15));
-	Chip_SCTPWM_SetDutyCycle(LPC_SCT, CTOUT3+1, 0);
-	Chip_SCTPWM_Start(LPC_SCT);
+	ServoInit(&servo, 1);
+	ServoAngle(servo, ANGULO_CERO);
+	PWMInit(&pwm_output, 1, PWM_FREC);
+	PWMSetDutyCycle(CTOUT3, 0);
+	PWMOn();
 
 	/* Creación del grupo de eventos */
 	eventos = xEventGroupCreate();
@@ -473,7 +410,6 @@ int main(void)
 	/* Creación de las tareas */
 	xTaskCreate(Decodificar, "Decodificar", configMINIMAL_STACK_SIZE, &comando_recibido, tskIDLE_PRIORITY + 2, NULL);
 	xTaskCreate(RecibirComando, "RecibirComando", configMINIMAL_STACK_SIZE, &comando_recibido, tskIDLE_PRIORITY + 3, NULL);
-	xTaskCreate(Teclado, "Teclado", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL);
 
 	/* Arranque del sistema operativo */
 	SisTick_Init();

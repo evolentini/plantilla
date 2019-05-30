@@ -1,0 +1,372 @@
+\section{Proyectos de ejemplo}
+\label{group__ejemplos}\index{Proyectos de ejemplo@{Proyectos de ejemplo}}
+
+
+Proyecto de Fianlizacion de el modulo 4 de la Especialización en Sistemas Embebidos.  
+
+
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \textbf{ cola\+\_\+t}
+\begin{DoxyCompactList}\small\item\em Estructura de datos para enviar y recibir datos. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \textbf{ E\+V\+E\+N\+T\+O\+\_\+\+C\+A\+R\+A\+C\+T\+ER}~(1 $<$$<$ 0)
+\item 
+\#define \textbf{ E\+V\+E\+N\+T\+O\+\_\+\+C\+A\+D\+E\+NA}~(1 $<$$<$ 1)
+\item 
+\#define \textbf{ P\+I\+N\+\_\+\+A\+D\+E\+L\+A\+N\+TE}~T\+\_\+\+F\+I\+L2
+\item 
+\#define \textbf{ P\+I\+N\+\_\+\+A\+T\+R\+AS}~T\+\_\+\+C\+O\+L0
+\item 
+\#define \textbf{ P\+I\+N\+\_\+\+B\+O\+C\+I\+NA}~L\+C\+D2
+\item 
+\#define \textbf{ P\+W\+M\+\_\+\+F\+R\+EC}~50
+\item 
+\#define \textbf{ A\+D\+E\+L\+A\+N\+TE}~0x\+F1
+\item 
+\#define \textbf{ A\+T\+R\+AS}~0x\+F2
+\item 
+\#define \textbf{ F\+R\+E\+N\+AR}~0x\+F3
+\item 
+\#define \textbf{ C\+A\+B\+E\+Z\+AL}~0x\+F4
+\item 
+\#define \textbf{ A\+P\+A\+G\+A\+R\+\_\+\+T\+O\+DO}~0x\+F5
+\item 
+\#define \textbf{ A\+N\+G\+U\+L\+O\+\_\+\+C\+E\+RO}~90
+\item 
+\#define \textbf{ L\+U\+C\+E\+S\+\_\+\+D\+E\+L\+A\+N\+T\+E\+R\+AS}~(1$<$$<$7)
+\item 
+\#define \textbf{ L\+U\+C\+E\+S\+\_\+\+T\+R\+A\+S\+E\+R\+AS}~(1$<$$<$6)
+\item 
+\#define \textbf{ B\+O\+C\+I\+NA}~(1$<$$<$5)
+\item 
+\#define \textbf{ A}~(1$<$$<$4)
+\item 
+\#define \textbf{ B}~(1$<$$<$3)
+\item 
+\#define \textbf{ C}~(1$<$$<$2)
+\item 
+\#define \textbf{ D}~(1$<$$<$1)
+\item 
+\#define \textbf{ E}~(1$<$$<$0)
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \textbf{ Decodificar} (void $\ast$parametros)
+\begin{DoxyCompactList}\small\item\em Función que decodifica un dato recibido por U\+A\+RT y realiza una accion. \end{DoxyCompactList}\item 
+void \textbf{ Recibir\+Comando} (void $\ast$parametros)
+\begin{DoxyCompactList}\small\item\em Función que decodifica un dato recibido por U\+A\+RT y realiza una accion. \end{DoxyCompactList}\item 
+void \textbf{ Int\+Recepcion} (void)
+\begin{DoxyCompactList}\small\item\em Función que implementa la funcion de interrupcion de recepcion de la U\+A\+RT. \end{DoxyCompactList}\item 
+void \textbf{ Motor\+Traccion} (uint8\+\_\+t sentido, uint8\+\_\+t velocidad)
+\begin{DoxyCompactList}\small\item\em Función que cambia el estado del motor de traccion [in] sentido Adelelante o hacia Atras [in] velocidad Valor del pwm (ducty) \end{DoxyCompactList}\item 
+void \textbf{ Motor\+Direccion} (uint8\+\_\+t angulo)
+\begin{DoxyCompactList}\small\item\em Función que cambia el estado del motor de direccion [in] angulo Valor del pwm (ducty) \end{DoxyCompactList}\item 
+void \textbf{ Estado\+Accesorios} (uint8\+\_\+t estado)
+\begin{DoxyCompactList}\small\item\em Función que cambia el estado de los accesorios del auto. \end{DoxyCompactList}\item 
+void \textbf{ Apagar\+Todo} (void)
+\begin{DoxyCompactList}\small\item\em Función que apaga ambos motores, luces y demas funciones. \end{DoxyCompactList}\item 
+int \textbf{ main} (void)
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+servo\+\_\+t \textbf{ servo} = S\+E\+R\+V\+O1
+\begin{DoxyCompactList}\small\item\em Variable para la inicializacion del servo de la direccion. \end{DoxyCompactList}\item 
+pwm\+\_\+out\+\_\+t \textbf{ pwm\+\_\+output} = C\+T\+O\+U\+T3
+\begin{DoxyCompactList}\small\item\em Variable para la inicializacion control por P\+WM de la traccion. \end{DoxyCompactList}\item 
+\textbf{ cola\+\_\+t} \textbf{ comando\+\_\+recibido}
+\begin{DoxyCompactList}\small\item\em Información para la recepcion de datos por la uart. \end{DoxyCompactList}\item 
+Event\+Group\+Handle\+\_\+t \textbf{ eventos}
+\begin{DoxyCompactList}\small\item\em Descriptor del grupo de eventos. \end{DoxyCompactList}\item 
+Queue\+Handle\+\_\+t \textbf{ cola}
+\item 
+uint32\+\_\+t \textbf{ ticks\+\_\+per\+\_\+cycle}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Proyecto de Fianlizacion de el modulo 4 de la Especialización en Sistemas Embebidos. 
+
+
+
+\subsection{Macro Definition Documentation}
+\mbox{\label{group__ejemplos_ga955f504eccf76b4eb2489c0adab03121}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!A@{A}}
+\index{A@{A}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{A}
+{\footnotesize\ttfamily \#define A~(1$<$$<$4)}
+
+\mbox{\label{group__ejemplos_gaf460c64240a8061007356d9ce43d83c7}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!A\+D\+E\+L\+A\+N\+TE@{A\+D\+E\+L\+A\+N\+TE}}
+\index{A\+D\+E\+L\+A\+N\+TE@{A\+D\+E\+L\+A\+N\+TE}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{A\+D\+E\+L\+A\+N\+TE}
+{\footnotesize\ttfamily \#define A\+D\+E\+L\+A\+N\+TE~0x\+F1}
+
+\mbox{\label{group__ejemplos_gaa6fc830e3363e97657d6fb8156e3a4ae}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!A\+N\+G\+U\+L\+O\+\_\+\+C\+E\+RO@{A\+N\+G\+U\+L\+O\+\_\+\+C\+E\+RO}}
+\index{A\+N\+G\+U\+L\+O\+\_\+\+C\+E\+RO@{A\+N\+G\+U\+L\+O\+\_\+\+C\+E\+RO}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{A\+N\+G\+U\+L\+O\+\_\+\+C\+E\+RO}
+{\footnotesize\ttfamily \#define A\+N\+G\+U\+L\+O\+\_\+\+C\+E\+RO~90}
+
+\mbox{\label{group__ejemplos_ga7dfdbf4c3844af0c0874b2b85fa82054}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!A\+P\+A\+G\+A\+R\+\_\+\+T\+O\+DO@{A\+P\+A\+G\+A\+R\+\_\+\+T\+O\+DO}}
+\index{A\+P\+A\+G\+A\+R\+\_\+\+T\+O\+DO@{A\+P\+A\+G\+A\+R\+\_\+\+T\+O\+DO}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{A\+P\+A\+G\+A\+R\+\_\+\+T\+O\+DO}
+{\footnotesize\ttfamily \#define A\+P\+A\+G\+A\+R\+\_\+\+T\+O\+DO~0x\+F5}
+
+\mbox{\label{group__ejemplos_ga7a645911848e25e725552eb39ed4db5b}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!A\+T\+R\+AS@{A\+T\+R\+AS}}
+\index{A\+T\+R\+AS@{A\+T\+R\+AS}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{A\+T\+R\+AS}
+{\footnotesize\ttfamily \#define A\+T\+R\+AS~0x\+F2}
+
+\mbox{\label{group__ejemplos_ga111da81ae5883147168bbb8366377b10}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!B@{B}}
+\index{B@{B}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{B}
+{\footnotesize\ttfamily \#define B~(1$<$$<$3)}
+
+\mbox{\label{group__ejemplos_ga7b0c8456335cfb3e133f075a575d2a83}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!B\+O\+C\+I\+NA@{B\+O\+C\+I\+NA}}
+\index{B\+O\+C\+I\+NA@{B\+O\+C\+I\+NA}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{B\+O\+C\+I\+NA}
+{\footnotesize\ttfamily \#define B\+O\+C\+I\+NA~(1$<$$<$5)}
+
+\mbox{\label{group__ejemplos_gac4cf4b2ab929bd23951a8676eeac086b}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!C@{C}}
+\index{C@{C}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{C}
+{\footnotesize\ttfamily \#define C~(1$<$$<$2)}
+
+\mbox{\label{group__ejemplos_ga46811bb3935e6a35b88c5f213baa39fe}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!C\+A\+B\+E\+Z\+AL@{C\+A\+B\+E\+Z\+AL}}
+\index{C\+A\+B\+E\+Z\+AL@{C\+A\+B\+E\+Z\+AL}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{C\+A\+B\+E\+Z\+AL}
+{\footnotesize\ttfamily \#define C\+A\+B\+E\+Z\+AL~0x\+F4}
+
+\mbox{\label{group__ejemplos_gaf316c33cc298530f245e8b55330e86b5}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!D@{D}}
+\index{D@{D}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{D}
+{\footnotesize\ttfamily \#define D~(1$<$$<$1)}
+
+\mbox{\label{group__ejemplos_ga07484107e6d9fdf38b53edf631d6511d}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!E@{E}}
+\index{E@{E}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{E}
+{\footnotesize\ttfamily \#define E~(1$<$$<$0)}
+
+\mbox{\label{group__ejemplos_ga6a85ff607ad38f3e53263990088dd8ee}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!E\+V\+E\+N\+T\+O\+\_\+\+C\+A\+D\+E\+NA@{E\+V\+E\+N\+T\+O\+\_\+\+C\+A\+D\+E\+NA}}
+\index{E\+V\+E\+N\+T\+O\+\_\+\+C\+A\+D\+E\+NA@{E\+V\+E\+N\+T\+O\+\_\+\+C\+A\+D\+E\+NA}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{E\+V\+E\+N\+T\+O\+\_\+\+C\+A\+D\+E\+NA}
+{\footnotesize\ttfamily \#define E\+V\+E\+N\+T\+O\+\_\+\+C\+A\+D\+E\+NA~(1 $<$$<$ 1)}
+
+\mbox{\label{group__ejemplos_ga29259fd370db33cce3770e723908b781}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!E\+V\+E\+N\+T\+O\+\_\+\+C\+A\+R\+A\+C\+T\+ER@{E\+V\+E\+N\+T\+O\+\_\+\+C\+A\+R\+A\+C\+T\+ER}}
+\index{E\+V\+E\+N\+T\+O\+\_\+\+C\+A\+R\+A\+C\+T\+ER@{E\+V\+E\+N\+T\+O\+\_\+\+C\+A\+R\+A\+C\+T\+ER}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{E\+V\+E\+N\+T\+O\+\_\+\+C\+A\+R\+A\+C\+T\+ER}
+{\footnotesize\ttfamily \#define E\+V\+E\+N\+T\+O\+\_\+\+C\+A\+R\+A\+C\+T\+ER~(1 $<$$<$ 0)}
+
+\mbox{\label{group__ejemplos_gafa979e415c42976aab8aa37b05ac3ce7}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!F\+R\+E\+N\+AR@{F\+R\+E\+N\+AR}}
+\index{F\+R\+E\+N\+AR@{F\+R\+E\+N\+AR}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{F\+R\+E\+N\+AR}
+{\footnotesize\ttfamily \#define F\+R\+E\+N\+AR~0x\+F3}
+
+\mbox{\label{group__ejemplos_ga1351894c5f5b9e851c33b7ded718d3bb}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!L\+U\+C\+E\+S\+\_\+\+D\+E\+L\+A\+N\+T\+E\+R\+AS@{L\+U\+C\+E\+S\+\_\+\+D\+E\+L\+A\+N\+T\+E\+R\+AS}}
+\index{L\+U\+C\+E\+S\+\_\+\+D\+E\+L\+A\+N\+T\+E\+R\+AS@{L\+U\+C\+E\+S\+\_\+\+D\+E\+L\+A\+N\+T\+E\+R\+AS}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{L\+U\+C\+E\+S\+\_\+\+D\+E\+L\+A\+N\+T\+E\+R\+AS}
+{\footnotesize\ttfamily \#define L\+U\+C\+E\+S\+\_\+\+D\+E\+L\+A\+N\+T\+E\+R\+AS~(1$<$$<$7)}
+
+\mbox{\label{group__ejemplos_ga06f8638bd4334449721afb468d4be10f}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!L\+U\+C\+E\+S\+\_\+\+T\+R\+A\+S\+E\+R\+AS@{L\+U\+C\+E\+S\+\_\+\+T\+R\+A\+S\+E\+R\+AS}}
+\index{L\+U\+C\+E\+S\+\_\+\+T\+R\+A\+S\+E\+R\+AS@{L\+U\+C\+E\+S\+\_\+\+T\+R\+A\+S\+E\+R\+AS}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{L\+U\+C\+E\+S\+\_\+\+T\+R\+A\+S\+E\+R\+AS}
+{\footnotesize\ttfamily \#define L\+U\+C\+E\+S\+\_\+\+T\+R\+A\+S\+E\+R\+AS~(1$<$$<$6)}
+
+\mbox{\label{group__ejemplos_gab90b02241c2b71062febd7a43ef0fe4e}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!P\+I\+N\+\_\+\+A\+D\+E\+L\+A\+N\+TE@{P\+I\+N\+\_\+\+A\+D\+E\+L\+A\+N\+TE}}
+\index{P\+I\+N\+\_\+\+A\+D\+E\+L\+A\+N\+TE@{P\+I\+N\+\_\+\+A\+D\+E\+L\+A\+N\+TE}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{P\+I\+N\+\_\+\+A\+D\+E\+L\+A\+N\+TE}
+{\footnotesize\ttfamily \#define P\+I\+N\+\_\+\+A\+D\+E\+L\+A\+N\+TE~T\+\_\+\+F\+I\+L2}
+
+\mbox{\label{group__ejemplos_ga36d2548abf4a4ae28b230eb8bac34fa1}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!P\+I\+N\+\_\+\+A\+T\+R\+AS@{P\+I\+N\+\_\+\+A\+T\+R\+AS}}
+\index{P\+I\+N\+\_\+\+A\+T\+R\+AS@{P\+I\+N\+\_\+\+A\+T\+R\+AS}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{P\+I\+N\+\_\+\+A\+T\+R\+AS}
+{\footnotesize\ttfamily \#define P\+I\+N\+\_\+\+A\+T\+R\+AS~T\+\_\+\+C\+O\+L0}
+
+\mbox{\label{group__ejemplos_ga1e7d6d29cc135e5960bac737db28b314}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!P\+I\+N\+\_\+\+B\+O\+C\+I\+NA@{P\+I\+N\+\_\+\+B\+O\+C\+I\+NA}}
+\index{P\+I\+N\+\_\+\+B\+O\+C\+I\+NA@{P\+I\+N\+\_\+\+B\+O\+C\+I\+NA}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{P\+I\+N\+\_\+\+B\+O\+C\+I\+NA}
+{\footnotesize\ttfamily \#define P\+I\+N\+\_\+\+B\+O\+C\+I\+NA~L\+C\+D2}
+
+\mbox{\label{group__ejemplos_ga944f230a25359e0969858f190540ad3f}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!P\+W\+M\+\_\+\+F\+R\+EC@{P\+W\+M\+\_\+\+F\+R\+EC}}
+\index{P\+W\+M\+\_\+\+F\+R\+EC@{P\+W\+M\+\_\+\+F\+R\+EC}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{P\+W\+M\+\_\+\+F\+R\+EC}
+{\footnotesize\ttfamily \#define P\+W\+M\+\_\+\+F\+R\+EC~50}
+
+
+
+\subsection{Function Documentation}
+\mbox{\label{group__ejemplos_ga3859cf6a567f2a26c80028a303810569}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!Apagar\+Todo@{Apagar\+Todo}}
+\index{Apagar\+Todo@{Apagar\+Todo}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{Apagar\+Todo()}
+{\footnotesize\ttfamily void Apagar\+Todo (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Función que apaga ambos motores, luces y demas funciones. 
+
+\begin{DoxyReturn}{Returns}
+N\+U\+LL 
+\end{DoxyReturn}
+\mbox{\label{group__ejemplos_gac22bf435db08e863950a98080d747371}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!Decodificar@{Decodificar}}
+\index{Decodificar@{Decodificar}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{Decodificar()}
+{\footnotesize\ttfamily void Decodificar (\begin{DoxyParamCaption}\item[{void $\ast$}]{parametros }\end{DoxyParamCaption})}
+
+
+
+Función que decodifica un dato recibido por U\+A\+RT y realiza una accion. 
+
+[in] parametros Puntero a una cadena que contiene el comando recibido \begin{DoxyReturn}{Returns}
+void 
+\end{DoxyReturn}
+\mbox{\label{group__ejemplos_gaf74cc790a664df67891e450107e6af68}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!Estado\+Accesorios@{Estado\+Accesorios}}
+\index{Estado\+Accesorios@{Estado\+Accesorios}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{Estado\+Accesorios()}
+{\footnotesize\ttfamily void Estado\+Accesorios (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{estado }\end{DoxyParamCaption})}
+
+
+
+Función que cambia el estado de los accesorios del auto. 
+
+\begin{DoxyReturn}{Returns}
+N\+U\+LL 
+\end{DoxyReturn}
+\mbox{\label{group__ejemplos_ga4c4b4860e46d2b6e73b78060ddfccde8}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!Int\+Recepcion@{Int\+Recepcion}}
+\index{Int\+Recepcion@{Int\+Recepcion}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{Int\+Recepcion()}
+{\footnotesize\ttfamily void Int\+Recepcion (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Función que implementa la funcion de interrupcion de recepcion de la U\+A\+RT. 
+
+\begin{DoxyReturn}{Returns}
+N\+U\+LL 
+\end{DoxyReturn}
+\mbox{\label{group__ejemplos_ga840291bc02cba5474a4cb46a9b9566fe}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!main@{main}}
+\index{main@{main}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{main()}
+{\footnotesize\ttfamily int main (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+\mbox{\label{group__ejemplos_ga00922fe46c34eb1843ac9068b21b3155}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!Motor\+Direccion@{Motor\+Direccion}}
+\index{Motor\+Direccion@{Motor\+Direccion}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{Motor\+Direccion()}
+{\footnotesize\ttfamily void Motor\+Direccion (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{angulo }\end{DoxyParamCaption})}
+
+
+
+Función que cambia el estado del motor de direccion [in] angulo Valor del pwm (ducty) 
+
+\begin{DoxyReturn}{Returns}
+N\+U\+LL 
+\end{DoxyReturn}
+\mbox{\label{group__ejemplos_gad80b8756be022716b80608fb8a0c5dd6}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!Motor\+Traccion@{Motor\+Traccion}}
+\index{Motor\+Traccion@{Motor\+Traccion}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{Motor\+Traccion()}
+{\footnotesize\ttfamily void Motor\+Traccion (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{sentido,  }\item[{uint8\+\_\+t}]{velocidad }\end{DoxyParamCaption})}
+
+
+
+Función que cambia el estado del motor de traccion [in] sentido Adelelante o hacia Atras [in] velocidad Valor del pwm (ducty) 
+
+\begin{DoxyReturn}{Returns}
+N\+U\+LL 
+\end{DoxyReturn}
+\mbox{\label{group__ejemplos_gae9396fb4b6c954a8b52a74593c5d5b3b}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!Recibir\+Comando@{Recibir\+Comando}}
+\index{Recibir\+Comando@{Recibir\+Comando}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{Recibir\+Comando()}
+{\footnotesize\ttfamily void Recibir\+Comando (\begin{DoxyParamCaption}\item[{void $\ast$}]{parametros }\end{DoxyParamCaption})}
+
+
+
+Función que decodifica un dato recibido por U\+A\+RT y realiza una accion. 
+
+[in] parametros Puntero a una cadena que contiene el comando recibido \begin{DoxyReturn}{Returns}
+N\+U\+LL 
+\end{DoxyReturn}
+
+
+\subsection{Variable Documentation}
+\mbox{\label{group__ejemplos_ga993b0270bc6a91f54621589ee6db4183}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!cola@{cola}}
+\index{cola@{cola}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{cola}
+{\footnotesize\ttfamily Queue\+Handle\+\_\+t cola}
+
+\mbox{\label{group__ejemplos_gae97d591c9b58416e82dd9dcdb95b685f}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!comando\+\_\+recibido@{comando\+\_\+recibido}}
+\index{comando\+\_\+recibido@{comando\+\_\+recibido}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{comando\+\_\+recibido}
+{\footnotesize\ttfamily \textbf{ cola\+\_\+t} comando\+\_\+recibido}
+
+
+
+Información para la recepcion de datos por la uart. 
+
+\mbox{\label{group__ejemplos_ga206fec25e2c681344c76edfaae89c99c}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!eventos@{eventos}}
+\index{eventos@{eventos}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{eventos}
+{\footnotesize\ttfamily Event\+Group\+Handle\+\_\+t eventos}
+
+
+
+Descriptor del grupo de eventos. 
+
+\mbox{\label{group__ejemplos_ga60bdd56461beea6551de9780d8fee5bd}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!pwm\+\_\+output@{pwm\+\_\+output}}
+\index{pwm\+\_\+output@{pwm\+\_\+output}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{pwm\+\_\+output}
+{\footnotesize\ttfamily pwm\+\_\+out\+\_\+t pwm\+\_\+output = C\+T\+O\+U\+T3}
+
+
+
+Variable para la inicializacion control por P\+WM de la traccion. 
+
+\mbox{\label{group__ejemplos_gac9bf31fae1711f00f3a5c93489f20dec}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!servo@{servo}}
+\index{servo@{servo}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{servo}
+{\footnotesize\ttfamily servo\+\_\+t servo = S\+E\+R\+V\+O1}
+
+
+
+Variable para la inicializacion del servo de la direccion. 
+
+\mbox{\label{group__ejemplos_ga0d8c58255793ebd1c0d2eed46216d675}} 
+\index{Proyectos de ejemplo@{Proyectos de ejemplo}!ticks\+\_\+per\+\_\+cycle@{ticks\+\_\+per\+\_\+cycle}}
+\index{ticks\+\_\+per\+\_\+cycle@{ticks\+\_\+per\+\_\+cycle}!Proyectos de ejemplo@{Proyectos de ejemplo}}
+\subsubsection{ticks\+\_\+per\+\_\+cycle}
+{\footnotesize\ttfamily uint32\+\_\+t ticks\+\_\+per\+\_\+cycle}
+
